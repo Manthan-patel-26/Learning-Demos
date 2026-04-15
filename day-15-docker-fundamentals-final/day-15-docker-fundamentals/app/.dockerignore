@@ -1,0 +1,23 @@
+# .dockerignore tells Docker WHAT NOT TO COPY into the build context.
+# A smaller build context = faster builds.
+# Without this, Docker uploads your entire project including node_modules!
+
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+**/build/
+.git/
+.gitignore
+*.md
+.env
+.env.*
+!.env.example    # DO include .env.example (safe — no real secrets)
+npm-debug.log
+.DS_Store
+coverage/
+*.test.ts
+*.test.tsx
+*.spec.ts
+**/__tests__/

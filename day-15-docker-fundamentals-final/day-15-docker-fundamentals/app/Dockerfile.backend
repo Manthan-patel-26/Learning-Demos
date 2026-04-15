@@ -1,0 +1,68 @@
+# ============================================================
+# BACKEND DOCKERFILE — Multi-Stage Build
+# ============================================================
+# Multi-stage builds: multiple FROM statements in one Dockerfile.
+# Each stage is isolated — files from one stage DON'T leak into others.
+# The final image only contains what we explicitly COPY from prior stages.
+# Result: lean production image without dev tools, source files, or node_modules.
+
+# ─── STAGE 1: Dependencies ───────────────────────────────
+# Separate stage for installing dependencies.
+# Key insight: COPY package.json BEFORE copying source code.
+# Docker caches each layer. If source changes but package.json doesn't,
+# npm install is NOT re-run (uses cached layer). Big time saver!
+FROM node:22-alpine AS deps
+
+WORKDIR /app
+
+# Copy ONLY package files first (triggers npm install cache miss only when deps change)
+COPY backend/package*.json ./
+
+# Install ALL deps (including devDeps) — we need them to compile TypeScript
+RUN npm ci --frozen-lockfile
+# npm ci (vs npm install):
+#   - Exact versions from package-lock.json (reproducible builds)
+#   - Fails if package-lock.json is missing or out of sync
+#   - Faster in CI environments
+#   - Does NOT update package-lock.json
+
+# ─── STAGE 2: Build TypeScript ────────────────────────────
+FROM node:22-alpine AS builder
+
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY backend/ ./
+
+# Compile TypeScript → JavaScript
+RUN npm run build
+# Result: ./dist/ folder with compiled JS
+
+# ─── STAGE 3: Production Image ────────────────────────────
+# Start fresh — only copy what we need to run the app.
+FROM node:22-alpine AS production
+
+# Security: don't run as root!
+# Create a non-root user and run as that user.
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
+WORKDIR /app
+
+# Install ONLY production dependencies (no TypeScript, nodemon, etc.)
+COPY backend/package*.json ./
+RUN npm ci --frozen-lockfile --only=production
+
+# Copy compiled JS from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Document which port the app uses (informational — doesn't publish it)
+EXPOSE 3001
+
+# Healthcheck: Docker monitors this and marks container as unhealthy if it fails
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD wget -qO- http://localhost:3001/health || exit 1
+
+# Use exec form (JSON array) — receives UNIX signals properly.
+# Shell form ("npm start") wraps in /bin/sh which doesn't forward signals.
+# Without this, Ctrl+C and graceful shutdown won't work.
+CMD ["node", "dist/index.js"]
