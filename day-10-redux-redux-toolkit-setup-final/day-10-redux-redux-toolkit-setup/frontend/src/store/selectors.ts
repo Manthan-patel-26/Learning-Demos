@@ -35,7 +35,7 @@ const selectAuthState = (state: RootState) => state.auth;
  */
 export const selectAllProductsList = createSelector(
   selectProductsState,
-  (productsState) => selectAllProducts(productsState)
+  (productsState) => selectAllProducts(productsState),
 );
 
 /**
@@ -48,7 +48,7 @@ export const selectFilteredProducts = createSelector(
   (products, selectedCategory) => {
     if (!selectedCategory) return products;
     return products.filter((p) => p.category === selectedCategory);
-  }
+  },
 );
 
 /**
@@ -56,24 +56,22 @@ export const selectFilteredProducts = createSelector(
  */
 export const selectCategories = createSelector(
   selectAllProductsList,
-  (products) => [...new Set(products.map((p) => p.category))]
+  (products) => [...new Set(products.map((p) => p.category))],
 );
 
 /**
  * Cart total item count (for the cart badge).
  * Memoized: only recomputes when cart items change.
  */
-export const selectCartItemCount = createSelector(
-  selectCartState,
-  (cart) => cart.items.reduce((sum, item) => sum + item.quantity, 0)
+export const selectCartItemCount = createSelector(selectCartState, (cart) =>
+  cart.items.reduce((sum, item) => sum + item.quantity, 0),
 );
 
 /**
  * Cart subtotal.
  */
-export const selectCartSubtotal = createSelector(
-  selectCartState,
-  (cart) => cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+export const selectCartSubtotal = createSelector(selectCartState, (cart) =>
+  cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
 );
 
 /**
@@ -92,19 +90,24 @@ export const selectCartWithDetails = createSelector(
         maxStock: product?.stock ?? 0,
         isOutOfStock: (product?.stock ?? 0) === 0,
       };
-    })
+    }),
 );
 
 /**
  * Auth convenience selectors
  */
 export const selectCurrentUser = (state: RootState) => state.auth.user;
-export const selectIsAdmin = (state: RootState) => state.auth.user?.role === "admin";
-export const selectIsAuthenticated = (state: RootState) => state.auth.isAuthenticated;
+export const selectIsAdmin = (state: RootState) =>
+  state.auth.user?.role === "admin";
+export const selectIsAuthenticated = (state: RootState) =>
+  state.auth.isAuthenticated;
 
 // Re-export for convenience
-export const selectProductsLoading = (state: RootState) => state.products.loading;
+export const selectProductsLoading = (state: RootState) =>
+  state.products.loading;
 export const selectProductsError = (state: RootState) => state.products.error;
 export const selectCartItems = (state: RootState) => state.cart.items;
-export const selectCheckoutStatus = (state: RootState) => state.cart.checkoutStatus;
-export const selectSelectedCategory = (state: RootState) => state.products.selectedCategory;
+export const selectCheckoutStatus = (state: RootState) =>
+  state.cart.checkoutStatus;
+export const selectSelectedCategory = (state: RootState) =>
+  state.products.selectedCategory;

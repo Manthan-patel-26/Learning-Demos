@@ -8,7 +8,12 @@
 
 import express, { Request, Response } from "express";
 import cors from "cors";
-import { createSuccess, createError, ApiHandler, safeAsync } from "./apiHandler";
+import {
+  createSuccess,
+  createError,
+  ApiHandler,
+  safeAsync,
+} from "./apiHandler";
 import { isUser } from "./typeGuards";
 import { User, Product, CreateUserInput, RolePermissions } from "./types";
 
@@ -74,7 +79,11 @@ app.get("/api/users/:id", (req: Request, res: Response) => {
 
   if (!user) {
     // Returns ApiError
-    res.status(404).json(createError("USER_NOT_FOUND", `User ${req.params["id"]} not found`));
+    res
+      .status(404)
+      .json(
+        createError("USER_NOT_FOUND", `User ${req.params["id"]} not found`),
+      );
     return;
   }
   // Returns ApiSuccess<User>
@@ -98,7 +107,9 @@ app.post("/api/users", (req: Request, res: Response) => {
 
   // isUser() is a type guard - validates at runtime
   if (!isUser(newUser)) {
-    res.status(400).json(createError("INVALID_USER", "Invalid user data provided"));
+    res
+      .status(400)
+      .json(createError("INVALID_USER", "Invalid user data provided"));
     return;
   }
 
@@ -126,16 +137,23 @@ app.get("/api/demo", (_req: Request, res: Response) => {
       message: "Day 1 TypeScript Concepts Demo",
       discriminatedUnionExample: publicResponse,
       utilityTypesExample: {
-        "Omit<User, id|createdAt|updatedAt>": "CreateUserInput - used for POST body",
-        "Partial<Pick<User, name|email|role>>": "UpdateUserInput - used for PATCH body",
+        "Omit<User, id|createdAt|updatedAt>":
+          "CreateUserInput - used for POST body",
+        "Partial<Pick<User, name|email|role>>":
+          "UpdateUserInput - used for PATCH body",
         "Record<role, string[]>": rolePermissions,
       },
       concepts: [
-        "Union Types", "Discriminated Unions", "Intersection Types",
-        "Mapped Types", "Generics with Constraints", "Utility Types",
-        "Type Guards", "Type Narrowing"
-      ]
-    })
+        "Union Types",
+        "Discriminated Unions",
+        "Intersection Types",
+        "Mapped Types",
+        "Generics with Constraints",
+        "Utility Types",
+        "Type Guards",
+        "Type Narrowing",
+      ],
+    }),
   );
 });
 

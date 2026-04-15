@@ -24,7 +24,9 @@ const JWT_ACCESS_SECRET = process.env["JWT_ACCESS_SECRET"];
 const JWT_REFRESH_SECRET = process.env["JWT_REFRESH_SECRET"];
 
 if (!JWT_ACCESS_SECRET || !JWT_REFRESH_SECRET) {
-  console.error("❌ JWT secrets not set in .env! Run: node -e \"console.log(require('crypto').randomBytes(64).toString('hex'))\"");
+  console.error(
+    "❌ JWT secrets not set in .env! Run: node -e \"console.log(require('crypto').randomBytes(64).toString('hex'))\"",
+  );
   process.exit(1);
 }
 
@@ -90,7 +92,10 @@ export async function hashPassword(plain: string): Promise<string> {
  * measure how long the comparison takes to deduce parts of the hash.
  * bcrypt.compare() always takes the same time — safe.
  */
-export async function verifyPassword(plain: string, hash: string): Promise<boolean> {
+export async function verifyPassword(
+  plain: string,
+  hash: string,
+): Promise<boolean> {
   return bcrypt.compare(plain, hash);
 }
 

@@ -9,6 +9,7 @@
 ---
 
 ## 🚀 How to Run Everything
+
 ```bash
 
 # Add Docker's official GPG key:
@@ -51,6 +52,7 @@ sudo docker compose down -v ( Prod )
 ```
 
 ## 📁 Project Structure
+
 ```
 app/
 ├── backend/              ← Node.js Express API

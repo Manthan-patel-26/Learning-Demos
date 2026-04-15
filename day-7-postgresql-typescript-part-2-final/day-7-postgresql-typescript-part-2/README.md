@@ -3,9 +3,11 @@
 **Date:** February 19, 2026 | **Learning Time:** 3 hours
 
 ## 🎯 What You'll Build
+
 Type-safe Repository Pattern with transaction support, connection pooling, migration scripts, and proper constraint violation handling.
 
 ## 🚀 How to Run
+
 ```bash
 cd backend
 cp .env.example .env   # Set your DATABASE_URL
@@ -15,6 +17,7 @@ npm run dev            # Start server on port 3001
 ```
 
 ## 📁 File Guide
+
 ```
 backend/src/
 ├── repositories/index.ts    ← BaseRepository<T,C,U> + UserRepo + ProductRepo
@@ -25,10 +28,13 @@ backend/src/
 ## 📖 Key Concepts
 
 ### Repository Pattern
+
 ```typescript
 // ❌ Without Repository — SQL scattered everywhere
 app.get("/users", async (req, res) => {
-  const { rows } = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+  const { rows } = await pool.query("SELECT * FROM users WHERE email = $1", [
+    email,
+  ]);
   // Duplicated if you need this in 5 different routes!
 });
 
@@ -40,6 +46,7 @@ app.get("/users", async (req, res) => {
 ```
 
 ### Generic Base Repository
+
 ```typescript
 // T = Entity type, C = Create input, U = Update input
 abstract class BaseRepository<T extends BaseEntity, C, U extends Partial<C>> {
@@ -52,6 +59,7 @@ abstract class BaseRepository<T extends BaseEntity, C, U extends Partial<C>> {
 ```
 
 ### Migrations vs Raw Schema
+
 ```typescript
 // ❌ Editing schema.sql directly — can't track changes
 // "Did we already add the images column to prod?"
@@ -64,9 +72,14 @@ abstract class BaseRepository<T extends BaseEntity, C, U extends Partial<C>> {
 ```
 
 ### Constraint Error Handling
+
 ```typescript
 try {
-  await userRepo.create({ email: "already@exists.com", name: "Bob", role: "customer" });
+  await userRepo.create({
+    email: "already@exists.com",
+    name: "Bob",
+    role: "customer",
+  });
 } catch (err) {
   if (err.message.includes("unique constraint")) {
     // 409 Conflict — not a 500 Internal Error!
@@ -79,6 +92,7 @@ try {
 ## ⚠️ Gotchas
 
 ### Connection Release
+
 ```typescript
 // ❌ Connection leak — pool exhausts after 20 requests!
 const client = await pool.connect();
@@ -95,6 +109,7 @@ try {
 ```
 
 ### Deadlocks
+
 ```
 Transaction A locks Table Users, wants Table Orders
 Transaction B locks Table Orders, wants Table Users
@@ -104,6 +119,7 @@ Prevention: Always lock tables in the SAME ORDER.
 ```
 
 ### Time Zone Handling
+
 ```sql
 -- ❌ TIMESTAMP (no timezone) — ambiguous!
 created_at TIMESTAMP  -- Is this UTC? Local time?

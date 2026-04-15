@@ -25,20 +25,33 @@ interface WithLoadingProps {
 // The generic T extends object and WithLoadingProps is removed from outer props
 // so the HOC consumer doesn't have to pass loading/error manually.
 export function withLoadingState<T extends object>(
-  WrappedComponent: ComponentType<T>
+  WrappedComponent: ComponentType<T>,
 ) {
   // The enhanced component — has a displayName for DevTools
-  const WithLoading: React.FC<T & WithLoadingProps> = ({ isLoading, error, ...props }) => {
-    if (isLoading) return (
-      <div style={{ padding: 40, textAlign: "center", color: "#718096" }}>
-        ⏳ Loading...
-      </div>
-    );
-    if (error) return (
-      <div style={{ padding: 20, background: "#fff5f5", borderRadius: 8, color: "#c53030" }}>
-        ⚠ {error}
-      </div>
-    );
+  const WithLoading: React.FC<T & WithLoadingProps> = ({
+    isLoading,
+    error,
+    ...props
+  }) => {
+    if (isLoading)
+      return (
+        <div style={{ padding: 40, textAlign: "center", color: "#718096" }}>
+          ⏳ Loading...
+        </div>
+      );
+    if (error)
+      return (
+        <div
+          style={{
+            padding: 20,
+            background: "#fff5f5",
+            borderRadius: 8,
+            color: "#c53030",
+          }}
+        >
+          ⚠ {error}
+        </div>
+      );
     return <WrappedComponent {...(props as T)} />;
   };
 
@@ -52,7 +65,10 @@ export function withLoadingState<T extends object>(
 // More flexible than HOC — the consumer controls the UI.
 // Modern alternative: custom hooks (usually cleaner)
 
-interface MousePosition { x: number; y: number; }
+interface MousePosition {
+  x: number;
+  y: number;
+}
 
 interface MouseTrackerProps {
   // "children as function" pattern — also called "function as child"
@@ -63,7 +79,8 @@ export function MouseTracker({ children }: MouseTrackerProps) {
   const [position, setPosition] = useState<MousePosition>({ x: 0, y: 0 });
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => setPosition({ x: e.clientX, y: e.clientY });
+    const handler = (e: MouseEvent) =>
+      setPosition({ x: e.clientX, y: e.clientY });
     window.addEventListener("mousemove", handler);
     return () => window.removeEventListener("mousemove", handler);
   }, []);
@@ -78,7 +95,8 @@ export function MouseTracker({ children }: MouseTrackerProps) {
 export function useMousePosition(): MousePosition {
   const [position, setPosition] = useState<MousePosition>({ x: 0, y: 0 });
   useEffect(() => {
-    const handler = (e: MouseEvent) => setPosition({ x: e.clientX, y: e.clientY });
+    const handler = (e: MouseEvent) =>
+      setPosition({ x: e.clientX, y: e.clientY });
     window.addEventListener("mousemove", handler);
     return () => window.removeEventListener("mousemove", handler);
   }, []);
@@ -89,25 +107,45 @@ export function useMousePosition(): MousePosition {
 // PROBLEM: One big context → any state change re-renders ALL consumers.
 // SOLUTION: Split into separate contexts based on change frequency.
 
-interface ThemeContextValue { theme: "light" | "dark"; colors: Record<string, string>; }
-interface ThemeActionsValue { toggleTheme: () => void; }
+interface ThemeContextValue {
+  theme: "light" | "dark";
+  colors: Record<string, string>;
+}
+interface ThemeActionsValue {
+  toggleTheme: () => void;
+}
 
 export const ThemeContext = React.createContext<ThemeContextValue>({
   theme: "light",
   colors: { background: "#f7fafc", text: "#2d3748", primary: "#4299e1" },
 });
-export const ThemeActionsContext = React.createContext<ThemeActionsValue>({ toggleTheme: () => {} });
+export const ThemeActionsContext = React.createContext<ThemeActionsValue>({
+  toggleTheme: () => {},
+});
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<"light" | "dark">("light");
-  const colors = theme === "light"
-    ? { background: "#f7fafc", text: "#2d3748", primary: "#4299e1", card: "#fff" }
-    : { background: "#1a202c", text: "#e2e8f0", primary: "#63b3ed", card: "#2d3748" };
+  const colors =
+    theme === "light"
+      ? {
+          background: "#f7fafc",
+          text: "#2d3748",
+          primary: "#4299e1",
+          card: "#fff",
+        }
+      : {
+          background: "#1a202c",
+          text: "#e2e8f0",
+          primary: "#63b3ed",
+          card: "#2d3748",
+        };
 
   // Memoize actions so ThemeActionsContext consumers don't re-render on theme change
   const actions = React.useMemo<ThemeActionsValue>(
-    () => ({ toggleTheme: () => setTheme(t => t === "light" ? "dark" : "light") }),
-    []
+    () => ({
+      toggleTheme: () => setTheme((t) => (t === "light" ? "dark" : "light")),
+    }),
+    [],
   );
 
   return (
@@ -119,5 +157,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useTheme() { return React.useContext(ThemeContext); }
-export function useThemeActions() { return React.useContext(ThemeActionsContext); }
+export function useTheme() {
+  return React.useContext(ThemeContext);
+}
+export function useThemeActions() {
+  return React.useContext(ThemeActionsContext);
+}

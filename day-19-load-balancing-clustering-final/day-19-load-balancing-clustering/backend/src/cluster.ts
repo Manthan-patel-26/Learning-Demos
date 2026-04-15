@@ -29,7 +29,9 @@ if (cluster.isPrimary) {
 
   // If a worker crashes, restart it
   cluster.on("exit", (worker, code, signal) => {
-    console.warn(`⚠️  Worker ${worker.process.pid} died (code: ${code}, signal: ${signal}). Restarting...`);
+    console.warn(
+      `⚠️  Worker ${worker.process.pid} died (code: ${code}, signal: ${signal}). Restarting...`,
+    );
     cluster.fork(); // Automatic restart
   });
 
@@ -39,7 +41,6 @@ if (cluster.isPrimary) {
       console.log(`   Worker ${worker.process.pid} is ready`);
     }
   });
-
 } else {
   // ── WORKER PROCESS ──────────────────────────────────────
   // Each worker is an independent Node.js process.
@@ -84,7 +85,9 @@ if (cluster.isPrimary) {
   //  2. Finish in-flight requests
   //  3. Exit cleanly
   const server = app.listen(3001, () => {
-    console.log(`   Worker ${cluster.worker?.id} (PID: ${process.pid}) listening on :3001`);
+    console.log(
+      `   Worker ${cluster.worker?.id} (PID: ${process.pid}) listening on :3001`,
+    );
     process.send?.({ type: "ready" }); // Notify primary we're ready
   });
 

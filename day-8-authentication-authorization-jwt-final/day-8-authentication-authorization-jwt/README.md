@@ -3,9 +3,11 @@
 **Date:** February 20, 2026 | **Learning Time:** 3 hours
 
 ## 🎯 What You'll Build
+
 Production-ready auth system with JWT access/refresh tokens, bcrypt password hashing, httpOnly cookies, and RBAC middleware.
 
 ## 🚀 How to Run
+
 ```bash
 cd backend
 cp .env.example .env
@@ -22,6 +24,7 @@ npm run start
 ```
 
 ## 🔗 Test the API
+
 ```bash
 # Register
 curl -X POST http://localhost:3001/api/auth/register \
@@ -45,6 +48,7 @@ curl http://localhost:3001/api/auth/admin-only \
 ## 📖 Key Concepts
 
 ### JWT Structure
+
 ```
 header.payload.signature
 eyJhbGci...  .eyJ1c2VySWQi...  .SflKxwRJSMeK...
@@ -57,6 +61,7 @@ Anyone can decode it! Never put sensitive data in JWT payload.
 ```
 
 ### Access Token + Refresh Token Flow
+
 ```
 Login → Server sends:
   - accessToken (15min) in response body → store in memory (NOT localStorage)
@@ -71,6 +76,7 @@ Logout: invalidate all refresh tokens → clear cookie
 ```
 
 ### XSS vs CSRF
+
 ```
 localStorage pros: Easy to use
 localStorage cons: XSS attack can steal token: document.cookie / localStorage
@@ -82,28 +88,31 @@ Best practice: accessToken in memory, refreshToken in httpOnly cookie
 ```
 
 ### RBAC Middleware
+
 ```typescript
 // Stack middleware for protected routes:
-router.get("/admin",
-  authenticate,              // 1. Verify JWT
-  authorize("admin"),        // 2. Check role
-  adminHandler               // 3. Handle if both pass
+router.get(
+  "/admin",
+  authenticate, // 1. Verify JWT
+  authorize("admin"), // 2. Check role
+  adminHandler, // 3. Handle if both pass
 );
 
 // Multiple allowed roles:
-router.get("/dashboard",
+router.get(
+  "/dashboard",
   authenticate,
   authorize("admin", "user"),
-  dashboardHandler
+  dashboardHandler,
 );
 ```
 
 ## ⚠️ Security Gotchas
 
-| Mistake | Danger | Fix |
-|---------|--------|-----|
-| Storing JWT in localStorage | XSS can steal it | Use httpOnly cookie or memory |
-| Hardcoding JWT secret | Anyone can forge tokens | Use env var with 64+ random bytes |
+| Mistake                                | Danger                         | Fix                                 |
+| -------------------------------------- | ------------------------------ | ----------------------------------- |
+| Storing JWT in localStorage            | XSS can steal it               | Use httpOnly cookie or memory       |
+| Hardcoding JWT secret                  | Anyone can forge tokens        | Use env var with 64+ random bytes   |
 | Same error for wrong email vs password | Lets attackers enumerate users | Always return "Invalid credentials" |
-| Not expiring access tokens | Stolen token works forever | 15min expiry + refresh rotation |
-| No rate limiting on /login | Brute force attacks | Add rate limiter (Day 9) |
+| Not expiring access tokens             | Stolen token works forever     | 15min expiry + refresh rotation     |
+| No rate limiting on /login             | Brute force attacks            | Add rate limiter (Day 9)            |

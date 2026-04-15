@@ -15,8 +15,16 @@ const submissions: unknown[] = [];
 // Accept form submissions from the frontend
 app.post("/api/submit", (req, res) => {
   const data = req.body;
-  submissions.push({ ...data, id: Date.now(), submittedAt: new Date().toISOString() });
-  res.json({ status: "success", message: "Form submitted!", total: submissions.length });
+  submissions.push({
+    ...data,
+    id: Date.now(),
+    submittedAt: new Date().toISOString(),
+  });
+  res.json({
+    status: "success",
+    message: "Form submitted!",
+    total: submissions.length,
+  });
 });
 
 app.get("/api/submissions", (_req, res) => {

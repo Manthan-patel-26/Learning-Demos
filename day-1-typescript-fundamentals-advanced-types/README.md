@@ -3,11 +3,13 @@
 **Date:** February 11, 2026 | **Learning Time:** 3 hours
 
 ## 🎯 What You'll Build
+
 A type-safe API Response Handler with discriminated unions, generics, utility types, and type guards.
 
 ---
 
 ## 📁 Project Structure
+
 ```
 day-1-typescript-fundamentals-advanced-types/
 ├── backend/           # Express + TypeScript API
@@ -31,6 +33,7 @@ day-1-typescript-fundamentals-advanced-types/
 ## 🚀 How to Run
 
 ### Backend
+
 ```bash
 cd backend
 npm install
@@ -39,6 +42,7 @@ npm run dev
 ```
 
 ### Frontend (separate terminal)
+
 ```bash
 cd frontend
 npm install
@@ -49,6 +53,7 @@ npm start
 ---
 
 ## 🔗 API Endpoints to Test
+
 ```
 GET  http://localhost:3001/api/demo         ← See all concepts in one response
 GET  http://localhost:3001/api/users/all    ← List users
@@ -58,6 +63,7 @@ GET  http://localhost:3001/api/safe-async   ← safeAsync wrapper demo
 ```
 
 **POST /api/users body example:**
+
 ```json
 {
   "name": "Charlie",
@@ -99,6 +105,7 @@ GET  http://localhost:3001/api/safe-async   ← safeAsync wrapper demo
 ## ⚠️ Common Gotchas (Senior Level Tips)
 
 ### 1. `any` vs `unknown`
+
 ```typescript
 // ❌ BAD - any disables ALL type checking
 function processData(data: any) {
@@ -114,6 +121,7 @@ function processData(data: unknown) {
 ```
 
 ### 2. Type Assertion vs Type Guard
+
 ```typescript
 // ❌ UNSAFE - you're forcing TypeScript to believe you
 const user = data as User; // No runtime check!
@@ -126,6 +134,7 @@ if (isUser(data)) {
 ```
 
 ### 3. Structural Typing (TypeScript's "Duck Typing")
+
 ```typescript
 type Point2D = { x: number; y: number };
 type Point3D = { x: number; y: number; z: number };
@@ -140,6 +149,7 @@ const p2dLiteral: Point2D = { x: 1, y: 2, z: 3 }; // ❌ Error! Extra property '
 ```
 
 ### 4. `readonly` vs `const`
+
 ```typescript
 const arr = [1, 2, 3];
 arr.push(4); // ✅ Works! const prevents reassignment, NOT mutation

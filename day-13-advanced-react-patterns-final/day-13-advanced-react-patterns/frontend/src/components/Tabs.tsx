@@ -31,8 +31,15 @@
  */
 
 import React, {
-  createContext, useContext, useState, useRef, useEffect,
-  useCallback, useMemo, ReactNode, KeyboardEvent,
+  createContext,
+  useContext,
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+  ReactNode,
+  KeyboardEvent,
 } from "react";
 
 // ─── CONTEXT SPLIT ────────────────────────────────────────
@@ -76,7 +83,12 @@ interface TabsProps {
   defaultTab?: string;
 }
 
-export function Tabs({ children, activeTab: controlledTab, onChange, defaultTab }: TabsProps) {
+export function Tabs({
+  children,
+  activeTab: controlledTab,
+  onChange,
+  defaultTab,
+}: TabsProps) {
   const isControlled = controlledTab !== undefined;
 
   // Internal state for uncontrolled mode
@@ -86,34 +98,40 @@ export function Tabs({ children, activeTab: controlledTab, onChange, defaultTab 
   // Determine the active tab based on mode
   const activeTab = isControlled ? controlledTab : internalTab;
 
-  const setActiveTab = useCallback((id: string) => {
-    if (isControlled) {
-      onChange?.(id); // Delegate to parent in controlled mode
-    } else {
-      setInternalTab(id);
-      onChange?.(id);
-    }
-  }, [isControlled, onChange]);
+  const setActiveTab = useCallback(
+    (id: string) => {
+      if (isControlled) {
+        onChange?.(id); // Delegate to parent in controlled mode
+      } else {
+        setInternalTab(id);
+        onChange?.(id);
+      }
+    },
+    [isControlled, onChange],
+  );
 
   // registerTab: called by each <Tab> on mount to track order
-  const registerTab = useCallback((id: string) => {
-    setRegisteredTabs(prev => {
-      if (prev.includes(id)) return prev;
-      const next = [...prev, id];
-      // Auto-select first tab if nothing is selected
-      if (!activeTab) setActiveTab(next[0]!);
-      return next;
-    });
-  }, [activeTab, setActiveTab]);
+  const registerTab = useCallback(
+    (id: string) => {
+      setRegisteredTabs((prev) => {
+        if (prev.includes(id)) return prev;
+        const next = [...prev, id];
+        // Auto-select first tab if nothing is selected
+        if (!activeTab) setActiveTab(next[0]!);
+        return next;
+      });
+    },
+    [activeTab, setActiveTab],
+  );
 
   // Memoize context values to prevent unnecessary re-renders
   const stateValue = useMemo<TabsState>(
     () => ({ activeTab, registeredTabs }),
-    [activeTab, registeredTabs]
+    [activeTab, registeredTabs],
   );
   const actionsValue = useMemo<TabsActions>(
     () => ({ setActiveTab, registerTab }),
-    [setActiveTab, registerTab]
+    [setActiveTab, registerTab],
   );
 
   return (
@@ -143,11 +161,21 @@ export function TabList({ children }: { children: ReactNode }) {
     let nextIdx = currentIdx;
 
     switch (e.key) {
-      case "ArrowRight": nextIdx = (currentIdx + 1) % registeredTabs.length; break;
-      case "ArrowLeft": nextIdx = (currentIdx - 1 + registeredTabs.length) % registeredTabs.length; break;
-      case "Home": nextIdx = 0; break;
-      case "End":  nextIdx = registeredTabs.length - 1; break;
-      default: return;
+      case "ArrowRight":
+        nextIdx = (currentIdx + 1) % registeredTabs.length;
+        break;
+      case "ArrowLeft":
+        nextIdx =
+          (currentIdx - 1 + registeredTabs.length) % registeredTabs.length;
+        break;
+      case "Home":
+        nextIdx = 0;
+        break;
+      case "End":
+        nextIdx = registeredTabs.length - 1;
+        break;
+      default:
+        return;
     }
 
     e.preventDefault();
@@ -155,7 +183,9 @@ export function TabList({ children }: { children: ReactNode }) {
     setActiveTab(nextTab);
 
     // Move focus to the newly active tab button
-    const tabEl = listRef.current?.querySelector<HTMLButtonElement>(`[data-tabid="${nextTab}"]`);
+    const tabEl = listRef.current?.querySelector<HTMLButtonElement>(
+      `[data-tabid="${nextTab}"]`,
+    );
     tabEl?.focus();
   };
 
@@ -165,8 +195,10 @@ export function TabList({ children }: { children: ReactNode }) {
       role="tablist"
       onKeyDown={handleKeyDown}
       style={{
-        display: "flex", borderBottom: "2px solid #e2e8f0",
-        marginBottom: 0, overflowX: "auto",
+        display: "flex",
+        borderBottom: "2px solid #e2e8f0",
+        marginBottom: 0,
+        overflowX: "auto",
       }}
     >
       {children}
@@ -187,7 +219,9 @@ export function Tab({ id, children, disabled = false }: TabProps) {
   const isActive = activeTab === id;
 
   // Register this tab with the parent on mount
-  useEffect(() => { registerTab(id); }, [id, registerTab]);
+  useEffect(() => {
+    registerTab(id);
+  }, [id, registerTab]);
 
   return (
     <button
@@ -220,11 +254,7 @@ export function Tab({ id, children, disabled = false }: TabProps) {
 
 // ─── TABPANELS ────────────────────────────────────────────
 export function TabPanels({ children }: { children: ReactNode }) {
-  return (
-    <div style={{ padding: "16px 0" }}>
-      {children}
-    </div>
-  );
+  return <div style={{ padding: "16px 0" }}>{children}</div>;
 }
 
 // ─── TABPANEL ─────────────────────────────────────────────

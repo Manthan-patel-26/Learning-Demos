@@ -9,6 +9,7 @@
 ---
 
 ## 🎯 What You'll Simulate
+
 A real team scenario: you and a "teammate" work on the same feature branch, create
 conflicts, resolve them, clean up history with interactive rebase, and write a
 professional pull request description.
@@ -200,7 +201,7 @@ git rebase -i HEAD~3
 # feat(auth): implement user authentication core
 #
 # - Add User type with id, email, role fields
-# - Add createUser factory function  
+# - Add createUser factory function
 # - Add password hashing utility (TODO: replace with bcrypt)
 ```
 
@@ -251,30 +252,36 @@ A great PR description follows this template:
 
 ```markdown
 ## What does this PR do?
+
 Implements the core authentication module for the user system.
 Adds User type definitions, a createUser factory, and a password
 hashing utility as the foundation for the full auth flow.
 
 ## Why is it needed?
+
 Resolves issue #42: Users cannot currently be created or authenticated.
 This is a prerequisite for the login endpoint (tracked in #43).
 
 ## Changes Made
+
 - `src/users.ts`: Added `User` type and `createUser()` factory function
 - `src/auth.ts`: Added `hashPassword()` utility (placeholder for bcrypt)
 
 ## How to Test
+
 1. `npm install`
 2. `npm run type-check` — should have 0 errors
 3. Test createUser: `npx ts-node -e "import {createUser} from './src/users'; console.log(createUser({email:'a@b.com',role:'user'}))"`
 
 ## Checklist
+
 - [x] No TypeScript errors (`npm run type-check`)
 - [x] Follows conventional commits
 - [x] No secrets or `.env` files committed
 - [x] PR title follows: `feat(auth): implement user authentication core`
 
 ## Screenshots / Output
+
 (paste terminal output here)
 ```
 
@@ -311,7 +318,7 @@ git branch recovery-branch  # Save your work to a named branch FIRST
 git checkout main
 git merge recovery-branch   # Then merge it
 
-# ─────────────────────────────────────────────  
+# ─────────────────────────────────────────────
 # SCENARIO: Fix last commit (before pushing)
 git commit --amend -m "fix: corrected commit message"
 # Also add forgotten files:
@@ -335,16 +342,16 @@ git push --force-with-lease origin feature/user-authentication
 
 ## ⚠️ Senior-Level Rules to Follow ALWAYS
 
-| Rule | Why |
-|------|-----|
-| Never `git push --force` to `main` | Overwrites teammates' work permanently |
-| Use `--force-with-lease` instead | Fails safely if remote has new commits |
-| Never commit to `main` directly | Use PRs so code gets reviewed |
-| Use `git rebase -i` before PRs | Keeps history clean and readable |
-| Always add `.env` to `.gitignore` | Secrets in git history = security breach |
-| Use conventional commits | Enables automated changelogs (semantic-release) |
-| Squash WIP commits before merging | "WIP", "fix typo", "oops" don't belong in history |
-| Sign your commits with GPG | `git config commit.gpgsign true` — proves it's you |
+| Rule                               | Why                                                |
+| ---------------------------------- | -------------------------------------------------- |
+| Never `git push --force` to `main` | Overwrites teammates' work permanently             |
+| Use `--force-with-lease` instead   | Fails safely if remote has new commits             |
+| Never commit to `main` directly    | Use PRs so code gets reviewed                      |
+| Use `git rebase -i` before PRs     | Keeps history clean and readable                   |
+| Always add `.env` to `.gitignore`  | Secrets in git history = security breach           |
+| Use conventional commits           | Enables automated changelogs (semantic-release)    |
+| Squash WIP commits before merging  | "WIP", "fix typo", "oops" don't belong in history  |
+| Sign your commits with GPG         | `git config commit.gpgsign true` — proves it's you |
 
 ---
 

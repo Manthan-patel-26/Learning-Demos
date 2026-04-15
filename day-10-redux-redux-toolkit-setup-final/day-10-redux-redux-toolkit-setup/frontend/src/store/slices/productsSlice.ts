@@ -11,7 +11,13 @@
  *  - Easier to update: just update one entity, all views update
  */
 
-import { createSlice, createAsyncThunk, createEntityAdapter, EntityState, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  createAsyncThunk,
+  createEntityAdapter,
+  EntityState,
+  PayloadAction,
+} from "@reduxjs/toolkit";
 
 export interface Product {
   id: string;
@@ -44,12 +50,15 @@ export const fetchProducts = createAsyncThunk<Product[]>(
     try {
       const res = await fetch("http://localhost:3001/api/products");
       const data = await res.json();
-      if (data.status !== "success") throw new Error(data.error?.message ?? "Failed");
+      if (data.status !== "success")
+        throw new Error(data.error?.message ?? "Failed");
       return data.data as Product[];
     } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : "Could not fetch products");
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Could not fetch products",
+      );
     }
-  }
+  },
 );
 
 const productsSlice = createSlice({
@@ -60,7 +69,10 @@ const productsSlice = createSlice({
       state.selectedCategory = action.payload;
     },
     // updateOne, removeOne, addOne, etc. are provided by the adapter!
-    updateProductStock(state, action: PayloadAction<{ id: string; stock: number }>) {
+    updateProductStock(
+      state,
+      action: PayloadAction<{ id: string; stock: number }>,
+    ) {
       productsAdapter.updateOne(state, {
         id: action.payload.id,
         changes: { stock: action.payload.stock },
@@ -69,7 +81,10 @@ const productsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchProducts.pending, (state) => { state.loading = true; state.error = null; })
+      .addCase(fetchProducts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
         // setAll: replace all entities with the fetched ones
@@ -77,15 +92,19 @@ const productsSlice = createSlice({
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string ?? "Failed to load products";
+        state.error = (action.payload as string) ?? "Failed to load products";
       });
   },
 });
 
 // Export the auto-generated selectors from the adapter
 // These already know how to select from state.products
-export const { selectAll: selectAllProducts, selectById: selectProductById, selectTotal: selectProductCount } =
-  productsAdapter.getSelectors();
+export const {
+  selectAll: selectAllProducts,
+  selectById: selectProductById,
+  selectTotal: selectProductCount,
+} = productsAdapter.getSelectors();
 
-export const { setSelectedCategory, updateProductStock } = productsSlice.actions;
+export const { setSelectedCategory, updateProductStock } =
+  productsSlice.actions;
 export default productsSlice.reducer;

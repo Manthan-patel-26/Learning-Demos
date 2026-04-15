@@ -3,11 +3,13 @@
 **Date:** March 10, 2026 | **Learning Time:** 3 hours
 
 ## 🎯 What You'll Do
+
 The backend has 4 intentional bugs. Your job is to find, understand, and fix all of them using Chrome DevTools inspector.
 
 ## 🚀 How to Debug
 
 ### Step 1: Start in Debug Mode
+
 ```bash
 cd backend
 npm run build
@@ -23,11 +25,13 @@ node --inspect -r ts-node/register src/index.ts
 ```
 
 ### Step 2: Open Chrome DevTools
+
 1. Open Chrome → navigate to `chrome://inspect`
 2. Click **"inspect"** under your Node process
 3. A DevTools window opens connected to your Node.js process
 
 ### Step 3: Reproduce Each Bug
+
 ```bash
 # Bug 1: Memory Leak — watch heap grow
 curl http://localhost:3001/health              # Note memoryMB
@@ -54,6 +58,7 @@ curl http://localhost:3001/api/crash           # Process will crash after 100ms
 ## 📖 Debugging Techniques
 
 ### Memory Leak Detection (Chrome DevTools)
+
 ```
 1. DevTools → Memory tab
 2. Take a heap snapshot (baseline)
@@ -64,6 +69,7 @@ curl http://localhost:3001/api/crash           # Process will crash after 100ms
 ```
 
 ### Event Loop Blocking Detection
+
 ```
 1. DevTools → Profiler tab → Start recording
 2. Make a request to /api/work/3

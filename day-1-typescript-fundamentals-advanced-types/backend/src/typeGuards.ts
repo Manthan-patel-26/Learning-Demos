@@ -2,16 +2,16 @@
  * ============================================================
  * TYPE GUARDS - Runtime Type Safety
  * ============================================================
- * 
+ *
  * TypeScript types only exist at compile time.
  * At runtime (when real data arrives from APIs, databases,
  * user input), you need TYPE GUARDS to safely narrow types.
- * 
+ *
  * A type guard is a function that returns a "type predicate":
  *   `value is SomeType`
  * This tells TypeScript "if this function returns true,
  * treat the value as SomeType in the following code."
- */ 
+ */
 
 import { ApiResponse, ApiSuccess, ApiError, User } from "./types";
 
@@ -34,7 +34,7 @@ import { ApiResponse, ApiSuccess, ApiError, User } from "./types";
  * The `response is ApiSuccess<T>` return type is the "type predicate"
  */
 export function isApiSuccess<T>(
-  response: ApiResponse<T>
+  response: ApiResponse<T>,
 ): response is ApiSuccess<T> {
   // We check the discriminant field at runtime
   return response.status === "success";
@@ -44,7 +44,7 @@ export function isApiSuccess<T>(
  * Type guard for ApiError
  */
 export function isApiError(
-  response: ApiResponse<unknown>
+  response: ApiResponse<unknown>,
 ): response is ApiError {
   return response.status === "error";
 }
@@ -68,7 +68,9 @@ export function isUser(value: unknown): value is User {
     typeof obj["email"] === "string" &&
     typeof obj["createdAt"] === "string" &&
     typeof obj["updatedAt"] === "string" &&
-    (obj["role"] === "admin" || obj["role"] === "user" || obj["role"] === "guest")
+    (obj["role"] === "admin" ||
+      obj["role"] === "user" ||
+      obj["role"] === "guest")
   );
 }
 
@@ -78,7 +80,7 @@ export function isUser(value: unknown): value is User {
  */
 export function hasProperty<T extends object, K extends string>(
   obj: T,
-  key: K
+  key: K,
 ): obj is T & Record<K, unknown> {
   return key in obj;
 }

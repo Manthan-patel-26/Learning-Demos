@@ -25,14 +25,21 @@ declare global {
  *
  * Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
  */
-export function authenticate(req: Request, res: Response, next: NextFunction): void {
+export function authenticate(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
   const authHeader = req.headers["authorization"];
 
   // Check header exists and follows "Bearer <token>" format
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     res.status(401).json({
       status: "error",
-      error: { code: "MISSING_TOKEN", message: "Authorization header required (Bearer <token>)" },
+      error: {
+        code: "MISSING_TOKEN",
+        message: "Authorization header required (Bearer <token>)",
+      },
     });
     return;
   }
@@ -70,7 +77,12 @@ export function authorize(...allowedRoles: UserRole[]) {
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
       // Should not happen if authenticate ran first, but defensive check
-      res.status(401).json({ status: "error", error: { code: "UNAUTHENTICATED", message: "Not authenticated" } });
+      res
+        .status(401)
+        .json({
+          status: "error",
+          error: { code: "UNAUTHENTICATED", message: "Not authenticated" },
+        });
       return;
     }
 
@@ -93,7 +105,11 @@ export function authorize(...allowedRoles: UserRole[]) {
  * Optional auth — doesn't fail if no token, but attaches user if present.
  * Use for routes that work for both logged-in and anonymous users.
  */
-export function optionalAuth(req: Request, _res: Response, next: NextFunction): void {
+export function optionalAuth(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): void {
   const authHeader = req.headers["authorization"];
   if (authHeader?.startsWith("Bearer ")) {
     try {

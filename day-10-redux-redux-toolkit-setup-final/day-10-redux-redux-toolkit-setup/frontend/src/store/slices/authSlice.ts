@@ -44,31 +44,41 @@ export const fetchCurrentUser = createAsyncThunk<User>(
     try {
       const res = await fetch("http://localhost:3001/api/auth/me");
       const data = await res.json();
-      if (data.status !== "success") throw new Error(data.error?.message ?? "Failed");
+      if (data.status !== "success")
+        throw new Error(data.error?.message ?? "Failed");
       return data.data as User;
     } catch (error) {
       // rejectWithValue: passes the error to the `rejected` case handler
       // Without this, you'd get a generic SerializedError
-      return rejectWithValue(error instanceof Error ? error.message : "Unknown error");
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Unknown error",
+      );
     }
-  }
+  },
 );
 
-export const loginUser = createAsyncThunk<User, { email: string; password: string }>(
-  "auth/loginUser",
-  async (credentials, { rejectWithValue }) => {
-    try {
-      // Simulated login (Day 8 auth would handle this properly)
-      await new Promise((r) => setTimeout(r, 500));
-      if (credentials.email !== "alice@example.com") {
-        return rejectWithValue("Invalid credentials");
-      }
-      return { id: "u1", name: "Alice", email: credentials.email, role: "admin" } as User;
-    } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : "Login failed");
+export const loginUser = createAsyncThunk<
+  User,
+  { email: string; password: string }
+>("auth/loginUser", async (credentials, { rejectWithValue }) => {
+  try {
+    // Simulated login (Day 8 auth would handle this properly)
+    await new Promise((r) => setTimeout(r, 500));
+    if (credentials.email !== "alice@example.com") {
+      return rejectWithValue("Invalid credentials");
     }
+    return {
+      id: "u1",
+      name: "Alice",
+      email: credentials.email,
+      role: "admin",
+    } as User;
+  } catch (error) {
+    return rejectWithValue(
+      error instanceof Error ? error.message : "Login failed",
+    );
   }
-);
+});
 
 // ─── SLICE ────────────────────────────────────────────────
 const authSlice = createSlice({
@@ -109,7 +119,8 @@ const authSlice = createSlice({
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.loading.fetchUser = false;
         // action.payload is what we passed to rejectWithValue()
-        state.error = action.payload as string ?? action.error.message ?? "Unknown error";
+        state.error =
+          (action.payload as string) ?? action.error.message ?? "Unknown error";
         state.isAuthenticated = false;
       })
       .addCase(loginUser.pending, (state) => {
@@ -123,7 +134,7 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading.login = false;
-        state.error = action.payload as string ?? "Login failed";
+        state.error = (action.payload as string) ?? "Login failed";
       });
   },
 });

@@ -46,7 +46,7 @@ let balance = 1000;
 // BUG: Non-atomic read-modify-write with async operations
 async function withdraw(amount: number): Promise<boolean> {
   const currentBalance = balance; // Read
-  await new Promise(r => setTimeout(r, 50)); // Simulate DB query
+  await new Promise((r) => setTimeout(r, 50)); // Simulate DB query
   // Another concurrent request can read the SAME balance here!
   if (currentBalance < amount) return false;
   balance = currentBalance - amount; // Write
@@ -74,7 +74,10 @@ app.get("/api/work/:n", (req: Request, res: Response) => {
   // Try: curl http://localhost:3001/api/work/3 &
   //      curl http://localhost:3001/health   ← This will hang!
   const result = slowSync(n);
-  res.json({ result: Math.round(result), warning: "This blocked the event loop!" });
+  res.json({
+    result: Math.round(result),
+    warning: "This blocked the event loop!",
+  });
 });
 
 app.post("/api/withdraw", async (req: Request, res: Response) => {
@@ -85,7 +88,13 @@ app.post("/api/withdraw", async (req: Request, res: Response) => {
   // With race condition: balance can go negative!
   // curl -X POST http://localhost:3001/api/withdraw -H 'Content-Type: application/json' -d '{"amount":200}'
   const success = await withdraw(amount);
-  res.json({ success, newBalance: balance, warning: success ? "Check balance with concurrent requests!" : "Insufficient funds" });
+  res.json({
+    success,
+    newBalance: balance,
+    warning: success
+      ? "Check balance with concurrent requests!"
+      : "Insufficient funds",
+  });
 });
 
 // BUG 4: Unhandled promise rejection — crashes the process in Node.js 15+
@@ -93,7 +102,9 @@ app.post("/api/withdraw", async (req: Request, res: Response) => {
 app.get("/api/crash", async (_req, res) => {
   // Simulates an async operation that rejects without being caught
   setTimeout(() => {
-    Promise.reject(new Error("💥 Unhandled rejection! This crashes the process."));
+    Promise.reject(
+      new Error("💥 Unhandled rejection! This crashes the process."),
+    );
   }, 100);
   res.json({ message: "Response sent, but process will crash in 100ms..." });
   // FIX: Wrap in try/catch or add .catch() handler
@@ -109,6 +120,8 @@ app.listen(3001, () => {
   console.log("\nBugs to find and fix:");
   console.log("  GET /api/work/3           → blocks event loop (3 seconds!)");
   console.log("  GET /health               → check requestLog size growing");
-  console.log("  POST /api/withdraw (x10)  → race condition, balance goes negative");
+  console.log(
+    "  POST /api/withdraw (x10)  → race condition, balance goes negative",
+  );
   console.log("  GET /api/crash            → unhandled rejection");
 });

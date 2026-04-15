@@ -8,7 +8,7 @@ import cors from "cors"; // 1. Import it
 const app = express();
 
 // 2. Enable CORS
-app.use(cors()); 
+app.use(cors());
 
 // If you want to be specific (safer):
 // app.use(cors({ origin: 'http://localhost:3000' }));

@@ -3,15 +3,18 @@
 **Date:** March 02, 2026 | **Learning Time:** 3 hours
 
 ## 🎯 What You'll Build
+
 Complete file upload API: drag & drop UI, real progress tracking (XHR), multiple files, chunked uploads for large files, file type validation, and filename sanitization.
 
 ## 🚀 How to Run
+
 ```bash
 cd backend && npm install && npm run dev   # port 3001
 cd frontend && npm install && npm start   # port 3000
 ```
 
 ## 🔗 API Endpoints
+
 ```bash
 # Single file upload
 curl -X POST http://localhost:3001/api/upload/single \
@@ -30,17 +33,18 @@ curl -X DELETE http://localhost:3001/api/uploads/filename.jpg
 
 ## ⚠️ Security Checklist
 
-| Risk | Our Mitigation |
-|------|---------------|
-| Path traversal (`../../etc/passwd`) | `path.basename()` + UUID prefix on all filenames |
-| MIME type spoofing | Validate `file.mimetype` server-side (add `file-type` lib for magic bytes in prod) |
-| Large file DoS | `limits.fileSize: 10MB` in multer config |
-| Filename XSS | Replace all non-alphanumeric chars in filename |
-| Disk exhaustion | Implement cleanup cron job for old files |
+| Risk                                | Our Mitigation                                                                     |
+| ----------------------------------- | ---------------------------------------------------------------------------------- |
+| Path traversal (`../../etc/passwd`) | `path.basename()` + UUID prefix on all filenames                                   |
+| MIME type spoofing                  | Validate `file.mimetype` server-side (add `file-type` lib for magic bytes in prod) |
+| Large file DoS                      | `limits.fileSize: 10MB` in multer config                                           |
+| Filename XSS                        | Replace all non-alphanumeric chars in filename                                     |
+| Disk exhaustion                     | Implement cleanup cron job for old files                                           |
 
 ## 📖 Key Concepts
 
 ### Disk vs Memory Storage
+
 ```typescript
 // DiskStorage: saves to disk during upload (good for large files, less RAM)
 const storage = multer.diskStorage({ destination: "uploads/", filename: ... });
@@ -51,6 +55,7 @@ const storage = multer.memoryStorage();
 ```
 
 ### Why XHR over fetch() for Progress
+
 ```typescript
 // ❌ fetch() — no upload progress events
 await fetch("/upload", { method: "POST", body: formData });
@@ -65,6 +70,7 @@ xhr.send(formData);
 ```
 
 ### Chunked Upload Benefits
+
 - Large files that exceed server limits can be split
 - Progress is tracked per chunk
 - Failed chunks can be retried individually

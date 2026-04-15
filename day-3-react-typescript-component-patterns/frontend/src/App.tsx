@@ -22,7 +22,7 @@ type RegistrationForm = {
   experienceYears: number | "";
   agreeToTerms: boolean;
   subscribeNewsletter: boolean;
-}
+};
 
 // ─── VALIDATION TYPE ──────────────────────────────────────
 // Partial because not every field needs an error
@@ -80,8 +80,9 @@ const experienceOptions: SelectOption<number>[] = [
 function validateForm(values: RegistrationForm): FormErrors {
   const errors: FormErrors = {};
 
-  if (!values.firstName.trim()) errors.firstName   = "First name is required";
-  else if (values.firstName.length < 2) errors.firstName = "Must be at least 2 characters";
+  if (!values.firstName.trim()) errors.firstName = "First name is required";
+  else if (values.firstName.length < 2)
+    errors.firstName = "Must be at least 2 characters";
 
   if (!values.lastName.trim()) errors.lastName = "Last name is required";
 
@@ -92,7 +93,8 @@ function validateForm(values: RegistrationForm): FormErrors {
   }
 
   if (!values.role) errors.role = "Please select a role";
-  if (values.experienceYears === "") errors.experienceYears = "Please select experience level";
+  if (values.experienceYears === "")
+    errors.experienceYears = "Please select experience level";
   if (!values.agreeToTerms) errors.agreeToTerms = "You must agree to the terms";
 
   return errors;
@@ -100,13 +102,20 @@ function validateForm(values: RegistrationForm): FormErrors {
 
 // ─── MAIN APP ──────────────────────────────────────────────
 export default function App() {
-  const { values, errors, setValue, setError, reset } = useForm<RegistrationForm>({
-    firstName: "", lastName: "", email: "",
-    role: "", experienceYears: "",
-    agreeToTerms: false, subscribeNewsletter: false,
-  });
+  const { values, errors, setValue, setError, reset } =
+    useForm<RegistrationForm>({
+      firstName: "",
+      lastName: "",
+      email: "",
+      role: "",
+      experienceYears: "",
+      agreeToTerms: false,
+      subscribeNewsletter: false,
+    });
 
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [submitMessage, setSubmitMessage] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
@@ -140,24 +149,46 @@ export default function App() {
   }
 
   const cardStyle: React.CSSProperties = {
-    background: "#fff", borderRadius: 12, padding: 24,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)", marginBottom: 16,
+    background: "#fff",
+    borderRadius: 12,
+    padding: 24,
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    marginBottom: 16,
   };
 
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", background: "#f7fafc", minHeight: "100vh", padding: 24 }}>
+    <div
+      style={{
+        fontFamily: "system-ui, sans-serif",
+        background: "#f7fafc",
+        minHeight: "100vh",
+        padding: 24,
+      }}
+    >
       <div style={{ maxWidth: 600, margin: "0 auto" }}>
-        <h1 style={{ marginTop: 0, color: "#2d3748" }}>📝 Day 3: Form Components Library</h1>
+        <h1 style={{ marginTop: 0, color: "#2d3748" }}>
+          📝 Day 3: Form Components Library
+        </h1>
         <p style={{ color: "#718096", marginBottom: 24 }}>
-          Type-safe reusable form components with validation — Input, Select, Checkbox
+          Type-safe reusable form components with validation — Input, Select,
+          Checkbox
         </p>
 
         <div style={cardStyle}>
-          <h2 style={{ marginTop: 0, fontSize: 18, color: "#4a5568" }}>Registration Form</h2>
+          <h2 style={{ marginTop: 0, fontSize: 18, color: "#4a5568" }}>
+            Registration Form
+          </h2>
 
           <form onSubmit={handleSubmit} noValidate>
             {/* Two inputs side by side - demonstrates grid layout */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 16,
+                marginBottom: 16,
+              }}
+            >
               <Input
                 label="First Name"
                 value={values.firstName}
@@ -190,7 +221,14 @@ export default function App() {
               />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 16,
+                marginBottom: 16,
+              }}
+            >
               {/* Select<"admin" | "user" | "guest"> - generic Select with string union */}
               <Select
                 label="Role"
@@ -213,7 +251,14 @@ export default function App() {
               />
             </div>
 
-            <div style={{ marginBottom: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div
+              style={{
+                marginBottom: 16,
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+              }}
+            >
               <Checkbox
                 label="I agree to the Terms of Service and Privacy Policy"
                 checked={values.agreeToTerms}
@@ -225,7 +270,9 @@ export default function App() {
                 label="Subscribe to newsletter"
                 description="Get weekly updates about new features and tips"
                 checked={values.subscribeNewsletter}
-                onChange={(e) => setValue("subscribeNewsletter", e.target.checked)}
+                onChange={(e) =>
+                  setValue("subscribeNewsletter", e.target.checked)
+                }
               />
             </div>
 
@@ -233,21 +280,31 @@ export default function App() {
               type="submit"
               disabled={submitStatus === "loading"}
               style={{
-                width: "100%", padding: "10px 20px",
+                width: "100%",
+                padding: "10px 20px",
                 background: submitStatus === "loading" ? "#90cdf4" : "#4299e1",
-                color: "#fff", border: "none", borderRadius: 6,
-                fontSize: 15, fontWeight: 600, cursor: "pointer",
+                color: "#fff",
+                border: "none",
+                borderRadius: 6,
+                fontSize: 15,
+                fontWeight: 600,
+                cursor: "pointer",
               }}
             >
               {submitStatus === "loading" ? "Submitting..." : "Create Account"}
             </button>
 
             {submitStatus !== "idle" && submitMessage && (
-              <div style={{
-                marginTop: 12, padding: 12, borderRadius: 6,
-                background: submitStatus === "success" ? "#c6f6d5" : "#fed7d7",
-                color: submitStatus === "success" ? "#276749" : "#c53030",
-              }}>
+              <div
+                style={{
+                  marginTop: 12,
+                  padding: 12,
+                  borderRadius: 6,
+                  background:
+                    submitStatus === "success" ? "#c6f6d5" : "#fed7d7",
+                  color: submitStatus === "success" ? "#276749" : "#c53030",
+                }}
+              >
                 {submitStatus === "success" ? "✅" : "⚠"} {submitMessage}
               </div>
             )}
@@ -257,12 +314,34 @@ export default function App() {
         <div style={{ ...cardStyle, background: "#fffbeb", fontSize: 13 }}>
           <h3 style={{ marginTop: 0 }}>🎓 Concepts Demonstrated</h3>
           <ul style={{ paddingLeft: 20, margin: 0, lineHeight: 1.8 }}>
-            <li><strong>forwardRef + TypeScript:</strong> Input & Checkbox use <code>React.forwardRef&lt;HTMLInputElement, Props&gt;</code></li>
-            <li><strong>Generic Components:</strong> <code>Select&lt;T extends string | number&gt;</code> — works with any value type</li>
-            <li><strong>Interface extends HTML attrs:</strong> <code>InputProps extends React.InputHTMLAttributes&lt;HTMLInputElement&gt;</code></li>
-            <li><strong>Custom Hook:</strong> <code>useForm&lt;T&gt;</code> — generic, reusable across any form</li>
-            <li><strong>ReactNode for children/labels:</strong> Checkbox label accepts JSX or plain string</li>
-            <li><strong>Partial&lt;Record&lt;K, V&gt;&gt;:</strong> FormErrors type — optional error for each field key</li>
+            <li>
+              <strong>forwardRef + TypeScript:</strong> Input & Checkbox use{" "}
+              <code>React.forwardRef&lt;HTMLInputElement, Props&gt;</code>
+            </li>
+            <li>
+              <strong>Generic Components:</strong>{" "}
+              <code>Select&lt;T extends string | number&gt;</code> — works with
+              any value type
+            </li>
+            <li>
+              <strong>Interface extends HTML attrs:</strong>{" "}
+              <code>
+                InputProps extends
+                React.InputHTMLAttributes&lt;HTMLInputElement&gt;
+              </code>
+            </li>
+            <li>
+              <strong>Custom Hook:</strong> <code>useForm&lt;T&gt;</code> —
+              generic, reusable across any form
+            </li>
+            <li>
+              <strong>ReactNode for children/labels:</strong> Checkbox label
+              accepts JSX or plain string
+            </li>
+            <li>
+              <strong>Partial&lt;Record&lt;K, V&gt;&gt;:</strong> FormErrors
+              type — optional error for each field key
+            </li>
           </ul>
         </div>
       </div>

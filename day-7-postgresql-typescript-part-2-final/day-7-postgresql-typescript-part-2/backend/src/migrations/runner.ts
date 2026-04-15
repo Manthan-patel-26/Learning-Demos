@@ -173,7 +173,9 @@ async function ensureMigrationsTable(): Promise<void> {
 }
 
 async function getAppliedMigrations(): Promise<Set<string>> {
-  const { rows } = await pool.query<{ id: string }>("SELECT id FROM migrations ORDER BY applied_at");
+  const { rows } = await pool.query<{ id: string }>(
+    "SELECT id FROM migrations ORDER BY applied_at",
+  );
   return new Set(rows.map((r) => r.id));
 }
 
@@ -192,13 +194,15 @@ async function runUp(): Promise<void> {
   for (const migration of pending) {
     const client = await pool.connect();
     try {
-      console.log(`⬆  Applying migration: ${migration.id} - ${migration.description}`);
+      console.log(
+        `⬆  Applying migration: ${migration.id} - ${migration.description}`,
+      );
       await client.query("BEGIN");
       await client.query(migration.up);
       // Record that this migration was applied
       await client.query(
         "INSERT INTO migrations (id, description) VALUES ($1, $2)",
-        [migration.id, migration.description]
+        [migration.id, migration.description],
       );
       await client.query("COMMIT");
       console.log(`   ✅ Done`);
@@ -251,4 +255,8 @@ async function runDown(): Promise<void> {
 const command = process.argv[2];
 (command === "down" ? runDown() : runUp())
   .then(() => pool.end())
-  .catch((e) => { console.error(e); pool.end(); process.exit(1); });
+  .catch((e) => {
+    console.error(e);
+    pool.end();
+    process.exit(1);
+  });

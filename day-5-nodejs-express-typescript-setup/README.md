@@ -3,9 +3,11 @@
 **Date:** February 17, 2026 | **Learning Time:** 2.5 hours
 
 ## 🎯 What You'll Build
+
 A production-grade Express REST API boilerplate with: typed middleware, Zod validation, custom errors, env validation, rate limiting, and graceful shutdown.
 
 ## 🚀 How to Run
+
 ```bash
 cd backend
 cp .env.example .env     # Create your .env file
@@ -14,6 +16,7 @@ npm run dev              # http://localhost:3001
 ```
 
 ## 🔗 Test the API
+
 ```bash
 # Health check
 curl http://localhost:3001/health
@@ -36,6 +39,7 @@ curl http://localhost:3001/api/nonexistent
 ```
 
 ## 📁 File Guide
+
 ```
 backend/src/
 ├── config/env.ts       ← Zod env validation — crashes early if .env is wrong
@@ -45,6 +49,7 @@ backend/src/
 ```
 
 ## ⚠️ Middleware Order (Critical!)
+
 ```
 app.use(cors)          // 1. FIRST — handle preflight before anything
 app.use(rateLimiter)   // 2. Early — reject abusers before parsing body
@@ -58,11 +63,12 @@ app.use(errorHandler)  // 7. LAST — must be last to catch all errors
 ## 📖 Key Concepts
 
 ### 1. Extending Express Request Type
+
 ```typescript
 declare global {
   namespace Express {
     interface Request {
-      startTime?: number;  // Add custom properties to every request
+      startTime?: number; // Add custom properties to every request
       requestId?: string;
     }
   }
@@ -71,6 +77,7 @@ declare global {
 ```
 
 ### 2. Zod as Single Source of Truth
+
 ```typescript
 const createUserSchema = z.object({
   name: z.string().min(2),
@@ -84,6 +91,7 @@ type CreateUserInput = z.infer<typeof createUserSchema>;
 ```
 
 ### 3. Custom Error Classes
+
 ```typescript
 // Throw anywhere in your app:
 throw new NotFoundError("User 42");
@@ -94,6 +102,7 @@ throw new UnauthorizedError();
 ```
 
 ### 4. Async Error Handling in Express
+
 ```typescript
 // Express 4: MUST wrap async handlers or errors won't be caught!
 router.get("/:id", async (req, res, next) => {

@@ -48,7 +48,7 @@ export interface QueryOptions {
 export abstract class BaseRepository<
   T extends BaseEntity,
   C extends Record<string, unknown>,
-  U extends Partial<C>
+  U extends Partial<C>,
 > {
   // Subclasses define which table they manage
   protected abstract readonly tableName: string;
@@ -70,7 +70,7 @@ export abstract class BaseRepository<
   async findById(id: string): Promise<T | null> {
     const { rows } = await this.pool.query<T>(
       `SELECT * FROM ${this.table} WHERE id = $1 LIMIT 1`,
-      [id]
+      [id],
     );
     return rows[0] ?? null; // ?? null: return null if undefined
   }
@@ -79,7 +79,9 @@ export abstract class BaseRepository<
    * List entities with pagination.
    * Returns { data, total } — total is for pagination UI.
    */
-  async findAll(options: QueryOptions = {}): Promise<{ data: T[]; total: number }> {
+  async findAll(
+    options: QueryOptions = {},
+  ): Promise<{ data: T[]; total: number }> {
     const {
       limit = 20,
       offset = 0,
@@ -93,12 +95,12 @@ export abstract class BaseRepository<
       `SELECT * FROM ${this.table}
        ORDER BY ${orderBy} ${orderDir}
        LIMIT $1 OFFSET $2`,
-      [limit, offset]
+      [limit, offset],
     );
 
     // Get total count for pagination
     const { rows: countRows } = await this.pool.query<{ count: string }>(
-      `SELECT COUNT(*) FROM ${this.table}`
+      `SELECT COUNT(*) FROM ${this.table}`,
     );
 
     return {
@@ -123,7 +125,7 @@ export abstract class BaseRepository<
       `INSERT INTO ${this.table} (${cols})
        VALUES (${placeholders})
        RETURNING *`,
-      values
+      values,
     );
 
     return rows[0]!; // We know it exists — we just inserted it
@@ -147,7 +149,7 @@ export abstract class BaseRepository<
        SET ${setClause}, updated_at = NOW()
        WHERE id = $${keys.length + 1}
        RETURNING *`,
-      [...values, id]
+      [...values, id],
     );
 
     return rows[0] ?? null;
@@ -161,7 +163,7 @@ export abstract class BaseRepository<
     const db = client ?? this.pool;
     const { rowCount } = await db.query(
       `UPDATE ${this.table} SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL`,
-      [id]
+      [id],
     );
     return (rowCount ?? 0) > 0;
   }
@@ -173,7 +175,7 @@ export abstract class BaseRepository<
     const db = client ?? this.pool;
     const { rowCount } = await db.query(
       `DELETE FROM ${this.table} WHERE id = $1`,
-      [id]
+      [id],
     );
     return (rowCount ?? 0) > 0;
   }
@@ -191,20 +193,26 @@ export interface User extends BaseEntity {
 export type CreateUserInput = Pick<User, "email" | "name" | "role">;
 export type UpdateUserInput = Partial<Pick<User, "name" | "role">>;
 
-export class UserRepository extends BaseRepository<User, CreateUserInput, UpdateUserInput> {
+export class UserRepository extends BaseRepository<
+  User,
+  CreateUserInput,
+  UpdateUserInput
+> {
   protected readonly tableName = "users";
 
   /** Find a user by email — for login lookups */
   async findByEmail(email: string): Promise<User | null> {
     const { rows } = await this.pool.query<User>(
       `SELECT * FROM ${this.table} WHERE email = $1 AND deleted_at IS NULL LIMIT 1`,
-      [email.toLowerCase()]
+      [email.toLowerCase()],
     );
     return rows[0] ?? null;
   }
 
   /** Get users with their order count and total spent */
-  async findWithStats(): Promise<(User & { order_count: number; total_spent: number })[]> {
+  async findWithStats(): Promise<
+    (User & { order_count: number; total_spent: number })[]
+  > {
     const { rows } = await this.pool.query(
       `SELECT u.*,
          COUNT(o.id)::int AS order_count,
@@ -213,7 +221,7 @@ export class UserRepository extends BaseRepository<User, CreateUserInput, Update
        LEFT JOIN shop.orders o ON o.user_id = u.id AND o.status != 'cancelled'
        WHERE u.deleted_at IS NULL
        GROUP BY u.id
-       ORDER BY total_spent DESC`
+       ORDER BY total_spent DESC`,
     );
     return rows;
   }
@@ -233,9 +241,15 @@ export interface Product extends BaseEntity {
 
 export type CreateProductInput = Pick<Product, "name" | "price" | "stock"> &
   Partial<Pick<Product, "description" | "sku" | "category_id">>;
-export type UpdateProductInput = Partial<CreateProductInput & Pick<Product, "is_active">>;
+export type UpdateProductInput = Partial<
+  CreateProductInput & Pick<Product, "is_active">
+>;
 
-export class ProductRepository extends BaseRepository<Product, CreateProductInput, UpdateProductInput> {
+export class ProductRepository extends BaseRepository<
+  Product,
+  CreateProductInput,
+  UpdateProductInput
+> {
   protected readonly tableName = "products";
 
   /** Find products with category name and rating (aggregation query) */
@@ -255,12 +269,16 @@ export class ProductRepository extends BaseRepository<Product, CreateProductInpu
   }
 
   /** Decrement stock within a transaction (prevents overselling) */
-  async decrementStock(productId: string, qty: number, client: PoolClient): Promise<boolean> {
+  async decrementStock(
+    productId: string,
+    qty: number,
+    client: PoolClient,
+  ): Promise<boolean> {
     const { rowCount } = await client.query(
       `UPDATE ${this.table}
        SET stock = stock - $1, updated_at = NOW()
        WHERE id = $2 AND stock >= $1`,
-      [qty, productId]
+      [qty, productId],
     );
     return (rowCount ?? 0) > 0; // false = insufficient stock
   }

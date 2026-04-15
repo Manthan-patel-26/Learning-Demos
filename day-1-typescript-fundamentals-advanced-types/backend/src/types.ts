@@ -2,7 +2,7 @@
  * ============================================================
  * TYPESCRIPT ADVANCED TYPES - CORE TYPE DEFINITIONS
  * ============================================================
- * 
+ *
  * This file demonstrates all the key TypeScript advanced type
  * concepts you need for production code.
  */

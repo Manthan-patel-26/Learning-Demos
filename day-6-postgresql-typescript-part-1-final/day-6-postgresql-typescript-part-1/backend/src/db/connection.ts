@@ -3,7 +3,7 @@
  * DATABASE CONNECTION & POOL SETUP
  * ============================================================
  * Uses the `pg` library (node-postgres) with a connection pool.
- * 
+ *
  * WHY USE A POOL?
  * Opening a DB connection is expensive (~50-100ms, TCP handshake + auth).
  * A pool keeps a set of connections open and reuses them.
@@ -47,17 +47,17 @@ pool.on("error", (err) => {
 /**
  * Type-safe query wrapper.
  * T is the shape of each row in the result.
- * 
+ *
  * Usage:
  *   const users = await query<User>("SELECT * FROM users WHERE id = $1", [id]);
  *   users.rows[0] is typed as User
- * 
+ *
  * IMPORTANT: Always use parameterized queries ($1, $2, ...) for user input.
  * NEVER use string interpolation: `WHERE id = '${id}'` ← SQL INJECTION!
  */
 export async function query<T extends any[] | QueryResultRow | Submittable>(
   sql: string,
-  params?: unknown[]
+  params?: unknown[],
 ): Promise<{ rows: T[]; rowCount: number }> {
   const start = Date.now();
   try {
@@ -78,24 +78,24 @@ export async function query<T extends any[] | QueryResultRow | Submittable>(
 /**
  * Runs multiple queries in a transaction.
  * If ANY query fails, ALL changes are rolled back.
- * 
+ *
  * Use for operations that must succeed or fail together:
  * - Creating an order + deducting stock
  * - Transferring money between accounts
- * 
+ *
  * The `fn` callback receives a PoolClient for transaction-scoped queries.
  */
 export async function withTransaction<T>(
-  fn: (client: PoolClient) => Promise<T>
+  fn: (client: PoolClient) => Promise<T>,
 ): Promise<T> {
   const client = await pool.connect(); // Get a dedicated connection
   try {
-    await client.query("BEGIN");       // Start transaction
-    const result = await fn(client);  // Run the operations
-    await client.query("COMMIT");     // Commit all changes
+    await client.query("BEGIN"); // Start transaction
+    const result = await fn(client); // Run the operations
+    await client.query("COMMIT"); // Commit all changes
     return result;
   } catch (error) {
-    await client.query("ROLLBACK");   // Undo all changes on error
+    await client.query("ROLLBACK"); // Undo all changes on error
     throw error;
   } finally {
     client.release(); // ALWAYS release back to pool — even on error!

@@ -27,7 +27,7 @@ export class AppError extends Error {
     public readonly statusCode: number,
     public readonly code: string,
     message: string,
-    public readonly details?: unknown
+    public readonly details?: unknown,
   ) {
     super(message);
     this.name = this.constructor.name;
@@ -43,26 +43,42 @@ export class ValidationError extends AppError {
 
 export class NotFoundError extends AppError {
   constructor(resource: string, id?: string) {
-    super(404, "NOT_FOUND", id ? `${resource} with id '${id}' not found` : `${resource} not found`);
+    super(
+      404,
+      "NOT_FOUND",
+      id ? `${resource} with id '${id}' not found` : `${resource} not found`,
+    );
   }
 }
 
 export class UnauthorizedError extends AppError {
-  constructor(msg = "Authentication required") { super(401, "UNAUTHORIZED", msg); }
+  constructor(msg = "Authentication required") {
+    super(401, "UNAUTHORIZED", msg);
+  }
 }
 
 export class ForbiddenError extends AppError {
-  constructor(msg = "You don't have permission to perform this action") { super(403, "FORBIDDEN", msg); }
+  constructor(msg = "You don't have permission to perform this action") {
+    super(403, "FORBIDDEN", msg);
+  }
 }
 
 export class ConflictError extends AppError {
   constructor(resource: string, field?: string) {
-    super(409, "CONFLICT", field ? `${resource} with this ${field} already exists` : `${resource} already exists`);
+    super(
+      409,
+      "CONFLICT",
+      field
+        ? `${resource} with this ${field} already exists`
+        : `${resource} already exists`,
+    );
   }
 }
 
 export class TooManyRequestsError extends AppError {
-  constructor() { super(429, "RATE_LIMIT_EXCEEDED", "Too many requests. Please slow down."); }
+  constructor() {
+    super(429, "RATE_LIMIT_EXCEEDED", "Too many requests. Please slow down.");
+  }
 }
 
 // ─── 2. STRUCTURED LOGGER ─────────────────────────────────
@@ -94,12 +110,17 @@ export const logger = {
     // These output structured JSON, filter by level, ship to logging services
     if (level === "ERROR") console.error(JSON.stringify(entry));
     else if (level === "WARN") console.warn(JSON.stringify(entry));
-    else if (process.env["LOG_LEVEL"] !== "silent") console.log(JSON.stringify(entry));
+    else if (process.env["LOG_LEVEL"] !== "silent")
+      console.log(JSON.stringify(entry));
   },
-  debug: (msg: string, meta?: Record<string, unknown>) => logger.log("DEBUG", msg, meta),
-  info:  (msg: string, meta?: Record<string, unknown>) => logger.log("INFO",  msg, meta),
-  warn:  (msg: string, meta?: Record<string, unknown>) => logger.log("WARN",  msg, meta),
-  error: (msg: string, meta?: Record<string, unknown>) => logger.log("ERROR", msg, meta),
+  debug: (msg: string, meta?: Record<string, unknown>) =>
+    logger.log("DEBUG", msg, meta),
+  info: (msg: string, meta?: Record<string, unknown>) =>
+    logger.log("INFO", msg, meta),
+  warn: (msg: string, meta?: Record<string, unknown>) =>
+    logger.log("WARN", msg, meta),
+  error: (msg: string, meta?: Record<string, unknown>) =>
+    logger.log("ERROR", msg, meta),
 };
 
 // Extend Express Request with request tracking fields
@@ -112,7 +133,11 @@ declare global {
   }
 }
 
-export function requestLogger(req: Request, res: Response, next: NextFunction): void {
+export function requestLogger(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
   req.startTime = Date.now();
   req.requestId = crypto.randomUUID().slice(0, 8); // Short unique ID per request
 
@@ -122,7 +147,8 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
   res.on("finish", () => {
     const durationMs = Date.now() - (req.startTime ?? Date.now());
     const statusCode = res.statusCode;
-    const level: LogLevel = statusCode >= 500 ? "ERROR" : statusCode >= 400 ? "WARN" : "INFO";
+    const level: LogLevel =
+      statusCode >= 500 ? "ERROR" : statusCode >= 400 ? "WARN" : "INFO";
 
     logger.log(level, `${req.method} ${req.path}`, {
       requestId: req.requestId,
@@ -139,7 +165,11 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
 
     // Warn about slow responses (> 1 second)
     if (durationMs > 1000) {
-      logger.warn("Slow response detected", { requestId: req.requestId, durationMs, path: req.path });
+      logger.warn("Slow response detected", {
+        requestId: req.requestId,
+        durationMs,
+        path: req.path,
+      });
     }
   });
 
@@ -150,7 +180,11 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
 // Ensures ALL responses have the same shape
 // Attach to res.json overrides the default behavior
 
-export function responseFormatter(_req: Request, res: Response, next: NextFunction): void {
+export function responseFormatter(
+  _req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
   // Override res.json to always wrap in standard format
   const originalJson = res.json.bind(res);
 
@@ -160,7 +194,11 @@ export function responseFormatter(_req: Request, res: Response, next: NextFuncti
       return originalJson(data);
     }
     // Wrap bare data in standard format
-    return originalJson({ status: "success", data, timestamp: new Date().toISOString() });
+    return originalJson({
+      status: "success",
+      data,
+      timestamp: new Date().toISOString(),
+    });
   };
 
   next();
@@ -187,7 +225,12 @@ export function validateQuery<T>(schema: ZodSchema<T>) {
   return (req: Request, _res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.query);
     if (!result.success) {
-      next(new ValidationError("Query parameter validation failed", result.error.flatten().fieldErrors));
+      next(
+        new ValidationError(
+          "Query parameter validation failed",
+          result.error.flatten().fieldErrors,
+        ),
+      );
       return;
     }
     req.query = result.data as typeof req.query;
@@ -206,7 +249,10 @@ export const rateLimiter = rateLimit({
   handler: (_req, res) => {
     res.status(429).json({
       status: "error",
-      error: { code: "RATE_LIMIT_EXCEEDED", message: "Too many requests. Limit: 100 per 15 minutes." },
+      error: {
+        code: "RATE_LIMIT_EXCEEDED",
+        message: "Too many requests. Limit: 100 per 15 minutes.",
+      },
     });
   },
 });
@@ -219,12 +265,19 @@ export const authRateLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     status: "error",
-    error: { code: "RATE_LIMIT_EXCEEDED", message: "Too many auth attempts. Try again in 15 minutes." }
+    error: {
+      code: "RATE_LIMIT_EXCEEDED",
+      message: "Too many auth attempts. Try again in 15 minutes.",
+    },
   },
 });
 
 // ─── 6. NOT FOUND ─────────────────────────────────────────
-export function notFound(req: Request, _res: Response, next: NextFunction): void {
+export function notFound(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): void {
   next(new NotFoundError(`Route ${req.method} ${req.path}`));
 }
 
@@ -234,14 +287,17 @@ export function errorHandler(
   err: unknown,
   req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction,
 ): void {
   const isDev = process.env["NODE_ENV"] === "development";
 
   // ── Operational errors (our custom AppError subclasses) ─
   if (err instanceof AppError) {
     logger.warn("Operational error", {
-      requestId: req.requestId, code: err.code, statusCode: err.statusCode, message: err.message
+      requestId: req.requestId,
+      code: err.code,
+      statusCode: err.statusCode,
+      message: err.message,
     });
 
     res.status(err.statusCode).json({
@@ -250,7 +306,9 @@ export function errorHandler(
         code: err.code,
         message: err.message,
         // Only include details (field errors etc) in dev, or for validation errors
-        ...(isDev || err instanceof ValidationError ? { details: err.details } : {}),
+        ...(isDev || err instanceof ValidationError
+          ? { details: err.details }
+          : {}),
       },
       requestId: req.requestId,
       timestamp: new Date().toISOString(),
@@ -262,7 +320,11 @@ export function errorHandler(
   if (err instanceof ZodError) {
     res.status(400).json({
       status: "error",
-      error: { code: "VALIDATION_ERROR", message: "Validation failed", details: err.flatten().fieldErrors },
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "Validation failed",
+        details: err.flatten().fieldErrors,
+      },
       timestamp: new Date().toISOString(),
     });
     return;

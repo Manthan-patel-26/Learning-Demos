@@ -22,9 +22,9 @@ import cartReducer from "./slices/cartSlice";
 //   - Adds serializability check (warns if you put non-serializable data in state)
 export const store = configureStore({
   reducer: {
-    auth: authReducer,       // User authentication state
+    auth: authReducer, // User authentication state
     products: productsReducer, // Product list, loading, errors
-    cart: cartReducer,       // Shopping cart items
+    cart: cartReducer, // Shopping cart items
   },
   // Optional: customize middleware
   middleware: (getDefaultMiddleware) =>

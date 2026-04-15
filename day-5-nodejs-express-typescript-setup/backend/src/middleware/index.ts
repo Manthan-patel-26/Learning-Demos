@@ -26,7 +26,7 @@ export class AppError extends Error {
     public readonly statusCode: number,
     public readonly code: string,
     message: string,
-    public readonly details?: unknown
+    public readonly details?: unknown,
   ) {
     super(message);
     this.name = "AppError"; // Important for instanceof checks
@@ -76,8 +76,12 @@ declare global {
   }
 }
 
-export function requestLogger(req: Request, res: Response, next: NextFunction): void {
-  // Record start time on the request  
+export function requestLogger(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  // Record start time on the request
   req.startTime = Date.now();
   req.requestId = Math.random().toString(36).slice(2, 10); // Simple ID
 
@@ -92,14 +96,17 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
 
     // Color-code by status (works in most terminals)
     const statusColor =
-      status >= 500 ? "\x1b[31m" : // Red for 5xx
-      status >= 400 ? "\x1b[33m" : // Yellow for 4xx
-      status >= 300 ? "\x1b[36m" : // Cyan for 3xx
-      "\x1b[32m";                  // Green for 2xx
+      status >= 500
+        ? "\x1b[31m" // Red for 5xx
+        : status >= 400
+          ? "\x1b[33m" // Yellow for 4xx
+          : status >= 300
+            ? "\x1b[36m" // Cyan for 3xx
+            : "\x1b[32m"; // Green for 2xx
     const reset = "\x1b[0m";
 
     console.log(
-      `[${req.requestId}] ${method} ${path} ${statusColor}${status}${reset} ${duration}ms`
+      `[${req.requestId}] ${method} ${path} ${statusColor}${status}${reset} ${duration}ms`,
     );
   });
 
@@ -114,10 +121,10 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
 
 /**
  * Creates a validation middleware for a given Zod schema.
- * 
+ *
  * Usage:
  *   router.post("/users", validateBody(createUserSchema), createUserHandler);
- * 
+ *
  * If validation fails: returns 400 with field-level error messages.
  * If validation passes: req.body is now the PARSED & TYPED data.
  */
@@ -150,7 +157,7 @@ export function errorHandler(
   err: unknown,
   req: Request,
   res: Response,
-  _next: NextFunction // Must include even if unused
+  _next: NextFunction, // Must include even if unused
 ): void {
   // ── Custom AppError ────────────────────────────────────
   if (err instanceof AppError) {
@@ -160,7 +167,9 @@ export function errorHandler(
         code: err.code,
         message: err.message,
         // Only include details in development — don't leak internals in production!
-        ...(config.NODE_ENV === "development" && err.details ? { details: err.details } : {}),
+        ...(config.NODE_ENV === "development" && err.details
+          ? { details: err.details }
+          : {}),
       },
       timestamp: new Date().toISOString(),
       requestId: req.requestId,
@@ -206,7 +215,11 @@ export function errorHandler(
 // Catches requests to routes that don't exist
 // ─────────────────────────────────────────────
 
-export function notFound(req: Request, _res: Response, next: NextFunction): void {
+export function notFound(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): void {
   next(new NotFoundError(`Route ${req.method} ${req.path}`));
 }
 
@@ -219,8 +232,8 @@ export function notFound(req: Request, _res: Response, next: NextFunction): void
 export const rateLimiter = rateLimit({
   windowMs: config.RATE_LIMIT_WINDOW_MS,
   max: config.RATE_LIMIT_MAX_REQUESTS,
-  standardHeaders: true,  // Return rate limit info in `RateLimit-*` headers
-  legacyHeaders: false,   // Disable the `X-RateLimit-*` headers (old standard)
+  standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers (old standard)
   message: {
     status: "error",
     error: {

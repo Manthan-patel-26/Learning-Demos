@@ -3,10 +3,13 @@
 **Date:** February 18, 2026 | **Learning Time:** 3 hours
 
 ## 🎯 What You'll Build
+
 Normalized e-commerce database schema with 5 complex SQL queries covering joins, aggregations, subqueries, CTEs, and window functions.
 
 ## 🚀 Prerequisites
+
 Install PostgreSQL and create a database:
+
 ```bash
 # Mac (Homebrew)
 brew install postgresql@16
@@ -47,6 +50,7 @@ ALTER USER postgres WITH PASSWORD 'password';
 ```
 
 ## 🚀 How to Run
+
 ```bash
 cd backend
 cp .env.example .env
@@ -59,6 +63,7 @@ npm run dev         # Starts server on port 3001
 ## Check the index file routes
 
 ## 📁 Key Files
+
 ```
 backend/src/db/
 ├── schema.sql     ← Full database schema with all 5 complex queries (commented)
@@ -69,17 +74,19 @@ backend/src/db/
 ## 📖 Key Concepts
 
 ### 1. Connection Pool
+
 ```typescript
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  min: 2,   // Always keep 2 connections alive
-  max: 20,  // Never exceed 20 simultaneous connections
-  idleTimeoutMillis: 30_000,    // Close idle connections after 30s
+  min: 2, // Always keep 2 connections alive
+  max: 20, // Never exceed 20 simultaneous connections
+  idleTimeoutMillis: 30_000, // Close idle connections after 30s
   connectionTimeoutMillis: 2_000, // Fail fast if can't connect
 });
 ```
 
 ### 2. Parameterized Queries (SQL Injection Prevention)
+
 ```typescript
 // ❌ DANGEROUS - SQL Injection!
 const users = await pool.query(`SELECT * FROM users WHERE email = '${email}'`);
@@ -91,6 +98,7 @@ const users = await query("SELECT * FROM users WHERE email = $1", [email]);
 ```
 
 ### 3. Transactions
+
 ```typescript
 // If creating the order succeeds but deducting stock fails,
 // BOTH changes are rolled back. Database stays consistent.
@@ -102,6 +110,7 @@ await withTransaction(async (client) => {
 ```
 
 ### 4. N+1 Query Problem
+
 ```sql
 -- ❌ N+1: 1 query for products + N queries for category name
 -- JavaScript: products.map(p => db.query("SELECT * FROM categories WHERE id = ?", [p.category_id]))
@@ -114,10 +123,10 @@ LEFT JOIN categories c ON p.category_id = c.id;
 
 ## ⚠️ PostgreSQL Gotchas
 
-| Gotcha | Detail |
-|--------|--------|
-| DECIMAL vs FLOAT | Always use DECIMAL for money! FLOAT has precision errors |
-| TIMESTAMP vs TIMESTAMPTZ | Always use TIMESTAMPTZ — stores timezone info |
-| NULL in WHERE | `WHERE col = NULL` never matches! Use `WHERE col IS NULL` |
-| Cascade delete | `ON DELETE CASCADE` auto-deletes child rows — careful! |
-| Connection leak | Always `client.release()` in a finally block! |
+| Gotcha                   | Detail                                                    |
+| ------------------------ | --------------------------------------------------------- |
+| DECIMAL vs FLOAT         | Always use DECIMAL for money! FLOAT has precision errors  |
+| TIMESTAMP vs TIMESTAMPTZ | Always use TIMESTAMPTZ — stores timezone info             |
+| NULL in WHERE            | `WHERE col = NULL` never matches! Use `WHERE col IS NULL` |
+| Cascade delete           | `ON DELETE CASCADE` auto-deletes child rows — careful!    |
+| Connection leak          | Always `client.release()` in a finally block!             |

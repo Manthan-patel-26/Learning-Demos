@@ -3,22 +3,26 @@
 **Date:** March 09, 2026 | **Learning Time:** 3 hours
 
 ## 🎯 What You'll Build
+
 Node.js clustering with the cluster module, PM2 process manager configuration, Nginx load balancer with health checks, and graceful shutdown.
 
 ## 🚀 How to Run
 
 ### Single Process (development)
+
 ```bash
 cd backend && npm install && npm run dev
 ```
 
 ### Cluster Mode (all CPU cores)
+
 ```bash
 cd backend && npm run cluster
 # Spawns one worker per CPU core — watch the different PIDs in responses
 ```
 
 ### With PM2 (production process manager)
+
 ```bash
 npm install -g pm2
 cd backend && npm run build
@@ -30,6 +34,7 @@ pm2 stop all
 ```
 
 ### With Nginx Load Balancer
+
 ```bash
 # Start 3 backend instances on different ports
 PORT=3001 node dist/index.js &
@@ -44,6 +49,7 @@ nginx -c $(pwd)/nginx.conf
 ## 📖 Key Concepts
 
 ### cluster module
+
 ```typescript
 if (cluster.isPrimary) {
   // Fork one worker per CPU core
@@ -57,10 +63,14 @@ if (cluster.isPrimary) {
 ```
 
 ### Why workers DON'T share memory
+
 ```typescript
 // ❌ This doesn't work in cluster mode!
 let sharedCounter = 0;
-app.get("/inc", () => { sharedCounter++; return sharedCounter; });
+app.get("/inc", () => {
+  sharedCounter++;
+  return sharedCounter;
+});
 // Each worker has its OWN sharedCounter — they diverge!
 
 // ✅ Use Redis for shared state across workers
@@ -72,9 +82,9 @@ app.get("/inc", async () => {
 
 ## ⚠️ Gotchas
 
-| Issue | Problem | Fix |
-|-------|---------|-----|
-| Shared memory | Workers have separate memory | Use Redis/DB for shared state |
-| Socket.io + cluster | Each worker only knows its own sockets | Use `@socket.io/redis-adapter` |
-| Sticky sessions | Load balancer sends user to different worker each request | Use Redis sessions OR ip_hash in nginx |
-| Graceful shutdown | In-flight requests killed immediately | Listen to SIGTERM, call `server.close()` |
+| Issue               | Problem                                                   | Fix                                      |
+| ------------------- | --------------------------------------------------------- | ---------------------------------------- |
+| Shared memory       | Workers have separate memory                              | Use Redis/DB for shared state            |
+| Socket.io + cluster | Each worker only knows its own sockets                    | Use `@socket.io/redis-adapter`           |
+| Sticky sessions     | Load balancer sends user to different worker each request | Use Redis sessions OR ip_hash in nginx   |
+| Graceful shutdown   | In-flight requests killed immediately                     | Listen to SIGTERM, call `server.close()` |

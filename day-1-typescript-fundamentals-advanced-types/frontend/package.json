@@ -14,8 +14,13 @@
     "type-check": "tsc --noEmit"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead"],
-    "development": ["last 1 chrome version"]
+    "production": [
+      ">0.2%",
+      "not dead"
+    ],
+    "development": [
+      "last 1 chrome version"
+    ]
   },
   "devDependencies": {
     "@types/react": "^18.2.0",

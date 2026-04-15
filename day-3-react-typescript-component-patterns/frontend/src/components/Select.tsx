@@ -24,14 +24,16 @@ export interface SelectOption<T extends string | number = string> {
 // ─── SELECT PROPS ─────────────────────────────────────────
 // The generic T propagates through: value and onChange use the same T.
 // This ensures you can't pass value="admin" to a Select<number>.
-interface SelectProps<T extends string | number>
-  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "value" | "onChange"> {
+interface SelectProps<T extends string | number> extends Omit<
+  React.SelectHTMLAttributes<HTMLSelectElement>,
+  "value" | "onChange"
+> {
   label: string;
   options: SelectOption<T>[];
-  value: T | "";                              // Current value
-  onChange: (value: T) => void;              // Typed callback - no event object needed
+  value: T | ""; // Current value
+  onChange: (value: T) => void; // Typed callback - no event object needed
   error?: string;
-  placeholder?: string;                      // "Select an option..." text
+  placeholder?: string; // "Select an option..." text
 }
 
 // ─── GENERIC COMPONENT ────────────────────────────────────
@@ -64,7 +66,10 @@ function Select<T extends string | number>({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <label htmlFor={selectId} style={{ fontSize: 13, fontWeight: 600, color: "#4a5568" }}>
+      <label
+        htmlFor={selectId}
+        style={{ fontSize: 13, fontWeight: 600, color: "#4a5568" }}
+      >
         {label}
         {required && <span style={{ color: "#e53e3e", marginLeft: 2 }}>*</span>}
       </label>

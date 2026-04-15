@@ -21,20 +21,30 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 // ─── TYPES ────────────────────────────────────────────────
 
 export interface Product {
-  id: string; name: string; price: number; category: string;
-  stock: number; rating: number; imageUrl: string; description: string;
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  stock: number;
+  rating: number;
+  imageUrl: string;
+  description: string;
 }
 
 export interface CartItem {
-  productId: string; quantity: number;
+  productId: string;
+  quantity: number;
   product?: Product;
 }
 
 export interface PaginatedProducts {
   data: Product[];
   pagination: {
-    page: number; limit: number; total: number;
-    totalPages: number; hasNextPage: boolean;
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
   };
 }
 
@@ -71,13 +81,13 @@ export const ecommerceApi = createApi({
   tagTypes: ["Product", "Cart", "Order"],
 
   endpoints: (builder) => ({
-
     // ── QUERY: Paginated product list ─────────────────────
     // builder.query<ResultType, ArgType>
     getProducts: builder.query<PaginatedProducts, ProductsQueryArgs>({
       query: ({ page = 1, limit = 10, category, search } = {}) => {
         const params = new URLSearchParams({
-          page: String(page), limit: String(limit),
+          page: String(page),
+          limit: String(limit),
           ...(category && { category }),
           ...(search && { search }),
         });
@@ -90,7 +100,10 @@ export const ecommerceApi = createApi({
         result
           ? [
               // Tag each individual product
-              ...result.data.map(({ id }) => ({ type: "Product" as const, id })),
+              ...result.data.map(({ id }) => ({
+                type: "Product" as const,
+                id,
+              })),
               // Tag the whole list
               { type: "Product", id: "LIST" },
             ]
@@ -134,7 +147,10 @@ export const ecommerceApi = createApi({
     // ── MUTATION: Update product price (OPTIMISTIC UPDATE) ─
     // Optimistic update: update the UI immediately, before server confirms.
     // If server fails → roll back to the old value.
-    updateProduct: builder.mutation<Product, { id: string; changes: Partial<Product> }>({
+    updateProduct: builder.mutation<
+      Product,
+      { id: string; changes: Partial<Product> }
+    >({
       query: ({ id, changes }) => ({
         url: `/products/${id}`,
         method: "PATCH",
@@ -149,7 +165,7 @@ export const ecommerceApi = createApi({
           ecommerceApi.util.updateQueryData("getProduct", id, (draft) => {
             // Immer draft — mutate directly
             Object.assign(draft, changes);
-          })
+          }),
         );
 
         try {
@@ -177,7 +193,10 @@ export const ecommerceApi = createApi({
     }),
 
     // ── MUTATION: Add to cart (OPTIMISTIC) ────────────────
-    addToCart: builder.mutation<CartItem[], { userId: string; productId: string; quantity?: number }>({
+    addToCart: builder.mutation<
+      CartItem[],
+      { userId: string; productId: string; quantity?: number }
+    >({
       query: ({ userId, productId, quantity = 1 }) => ({
         url: `/cart/${userId}/items`,
         method: "POST",
@@ -185,16 +204,19 @@ export const ecommerceApi = createApi({
       }),
 
       // Optimistic add to cart — the user sees instant feedback
-      async onQueryStarted({ userId, productId, quantity = 1 }, { dispatch, queryFulfilled }) {
+      async onQueryStarted(
+        { userId, productId, quantity = 1 },
+        { dispatch, queryFulfilled },
+      ) {
         const patchResult = dispatch(
           ecommerceApi.util.updateQueryData("getCart", userId, (draft) => {
-            const existing = draft.find(i => i.productId === productId);
+            const existing = draft.find((i) => i.productId === productId);
             if (existing) {
               existing.quantity += quantity;
             } else {
               draft.push({ productId, quantity });
             }
-          })
+          }),
         );
         try {
           await queryFulfilled;
@@ -208,7 +230,10 @@ export const ecommerceApi = createApi({
     }),
 
     // ── MUTATION: Remove from cart ────────────────────────
-    removeFromCart: builder.mutation<void, { userId: string; productId: string }>({
+    removeFromCart: builder.mutation<
+      void,
+      { userId: string; productId: string }
+    >({
       query: ({ userId, productId }) => ({
         url: `/cart/${userId}/items/${productId}`,
         method: "DELETE",
@@ -217,7 +242,10 @@ export const ecommerceApi = createApi({
     }),
 
     // ── MUTATION: Place order ─────────────────────────────
-    placeOrder: builder.mutation<{ id: string }, { userId: string; items: CartItem[] }>({
+    placeOrder: builder.mutation<
+      { id: string },
+      { userId: string; items: CartItem[] }
+    >({
       query: (body) => ({ url: "/orders", method: "POST", body }),
       transformResponse: (response: { data: { id: string } }) => response.data,
       // Placing an order clears the cart + creates an order

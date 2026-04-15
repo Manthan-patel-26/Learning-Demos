@@ -42,9 +42,11 @@ export const checkout = createAsyncThunk<{ id: string }, CartItem[]>(
       const data = await res.json();
       return data.data as { id: string };
     } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : "Checkout failed");
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Checkout failed",
+      );
     }
-  }
+  },
 );
 
 const cartSlice = createSlice({
@@ -53,7 +55,9 @@ const cartSlice = createSlice({
   reducers: {
     // Add to cart or increment quantity if already in cart
     addItem(state, action: PayloadAction<Omit<CartItem, "quantity">>) {
-      const existing = state.items.find((i) => i.productId === action.payload.productId);
+      const existing = state.items.find(
+        (i) => i.productId === action.payload.productId,
+      );
       if (existing) {
         // Immer: this LOOKS like mutation, RTK makes it immutable
         existing.quantity += 1;
@@ -61,15 +65,23 @@ const cartSlice = createSlice({
         state.items.push({ ...action.payload, quantity: 1 });
       }
     },
-    removeItem(state, action: PayloadAction<string>) { // payload = productId
+    removeItem(state, action: PayloadAction<string>) {
+      // payload = productId
       state.items = state.items.filter((i) => i.productId !== action.payload);
     },
-    updateQuantity(state, action: PayloadAction<{ productId: string; quantity: number }>) {
-      const item = state.items.find((i) => i.productId === action.payload.productId);
+    updateQuantity(
+      state,
+      action: PayloadAction<{ productId: string; quantity: number }>,
+    ) {
+      const item = state.items.find(
+        (i) => i.productId === action.payload.productId,
+      );
       if (item) {
         if (action.payload.quantity <= 0) {
           // Remove if quantity goes to 0
-          state.items = state.items.filter((i) => i.productId !== action.payload.productId);
+          state.items = state.items.filter(
+            (i) => i.productId !== action.payload.productId,
+          );
         } else {
           item.quantity = action.payload.quantity;
         }
@@ -83,7 +95,10 @@ const cartSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(checkout.pending, (state) => { state.checkoutStatus = "loading"; state.error = null; })
+      .addCase(checkout.pending, (state) => {
+        state.checkoutStatus = "loading";
+        state.error = null;
+      })
       .addCase(checkout.fulfilled, (state, action) => {
         state.checkoutStatus = "success";
         state.orderId = action.payload.id;
@@ -91,10 +106,11 @@ const cartSlice = createSlice({
       })
       .addCase(checkout.rejected, (state, action) => {
         state.checkoutStatus = "error";
-        state.error = action.payload as string ?? "Checkout failed";
+        state.error = (action.payload as string) ?? "Checkout failed";
       });
   },
 });
 
-export const { addItem, removeItem, updateQuantity, clearCart } = cartSlice.actions;
+export const { addItem, removeItem, updateQuantity, clearCart } =
+  cartSlice.actions;
 export default cartSlice.reducer;

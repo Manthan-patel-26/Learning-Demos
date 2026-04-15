@@ -29,9 +29,17 @@ const UPLOAD_DIR = path.join(__dirname, "..", "uploads");
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 // ─── ALLOWED FILE TYPES ───────────────────────────────────
-const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
-const ALLOWED_DOC_TYPES = new Set(["application/pdf", "text/plain",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]);
+const ALLOWED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
+const ALLOWED_DOC_TYPES = new Set([
+  "application/pdf",
+  "text/plain",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+]);
 const ALL_ALLOWED = new Set([...ALLOWED_IMAGE_TYPES, ...ALLOWED_DOC_TYPES]);
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -43,9 +51,10 @@ const MAX_FILES = 5;
 // We sanitize: strip directory components and special chars.
 function sanitizeFilename(original: string): string {
   const ext = path.extname(original).toLowerCase();
-  const base = path.basename(original, ext)
+  const base = path
+    .basename(original, ext)
     .replace(/[^a-zA-Z0-9_-]/g, "_") // Only safe chars
-    .slice(0, 50);                     // Limit length
+    .slice(0, 50); // Limit length
   return `${uuidv4()}-${base}${ext}`; // UUID prefix makes it unique
 }
 
@@ -70,18 +79,24 @@ const fileFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
   if (ALL_ALLOWED.has(file.mimetype)) {
     cb(null, true); // Accept
   } else {
-    cb(new Error(`File type ${file.mimetype} is not allowed. Allowed: ${[...ALL_ALLOWED].join(", ")}`));
+    cb(
+      new Error(
+        `File type ${file.mimetype} is not allowed. Allowed: ${[...ALL_ALLOWED].join(", ")}`,
+      ),
+    );
   }
 };
 
 // ─── MULTER INSTANCES ─────────────────────────────────────
 const uploadSingle = multer({
-  storage, fileFilter,
+  storage,
+  fileFilter,
   limits: { fileSize: MAX_FILE_SIZE },
 }).single("file"); // "file" = the form field name
 
 const uploadMultiple = multer({
-  storage, fileFilter,
+  storage,
+  fileFilter,
   limits: { fileSize: MAX_FILE_SIZE, files: MAX_FILES },
 }).array("files", MAX_FILES);
 
@@ -93,11 +108,21 @@ function handleMulterError(err: unknown, res: Response): boolean {
       LIMIT_FILE_COUNT: `Too many files. Maximum: ${MAX_FILES}`,
       LIMIT_UNEXPECTED_FILE: "Unexpected file field name",
     };
-    res.status(400).json({ status: "error", error: { code: err.code, message: messages[err.code] ?? err.message } });
+    res
+      .status(400)
+      .json({
+        status: "error",
+        error: { code: err.code, message: messages[err.code] ?? err.message },
+      });
     return true;
   }
   if (err instanceof Error) {
-    res.status(400).json({ status: "error", error: { code: "INVALID_FILE", message: err.message } });
+    res
+      .status(400)
+      .json({
+        status: "error",
+        error: { code: "INVALID_FILE", message: err.message },
+      });
     return true;
   }
   return false;
@@ -114,7 +139,12 @@ app.use("/uploads", express.static(UPLOAD_DIR));
 app.post("/api/upload/single", (req: Request, res: Response) => {
   uploadSingle(req, res, (err) => {
     if (handleMulterError(err, res)) return;
-    if (!req.file) { res.status(400).json({ status: "error", error: { message: "No file provided" } }); return; }
+    if (!req.file) {
+      res
+        .status(400)
+        .json({ status: "error", error: { message: "No file provided" } });
+      return;
+    }
 
     const file = req.file;
     const isImage = ALLOWED_IMAGE_TYPES.has(file.mimetype);
@@ -141,11 +171,16 @@ app.post("/api/upload/multiple", (req: Request, res: Response) => {
   uploadMultiple(req, res, (err) => {
     if (handleMulterError(err, res)) return;
     const files = req.files as Express.Multer.File[];
-    if (!files?.length) { res.status(400).json({ status: "error", error: { message: "No files provided" } }); return; }
+    if (!files?.length) {
+      res
+        .status(400)
+        .json({ status: "error", error: { message: "No files provided" } });
+      return;
+    }
 
     res.status(201).json({
       status: "success",
-      data: files.map(file => ({
+      data: files.map((file) => ({
         originalName: file.originalname,
         storedName: file.filename,
         url: `http://localhost:3001/uploads/${file.filename}`,
@@ -162,57 +197,82 @@ app.post("/api/upload/multiple", (req: Request, res: Response) => {
 // For large files: split into chunks on the client,
 // upload each chunk separately, reassemble on the server.
 // This allows: progress tracking, resume on failure, parallel upload.
-const chunks: Map<string, { received: number; total: number; path: string }> = new Map();
+const chunks: Map<string, { received: number; total: number; path: string }> =
+  new Map();
 
-app.post("/api/upload/chunk", express.raw({ type: "*/*", limit: "5mb" }), (req: Request, res: Response) => {
-  const uploadId = req.headers["x-upload-id"] as string;
-  const chunkIndex = parseInt(req.headers["x-chunk-index"] as string);
-  const totalChunks = parseInt(req.headers["x-total-chunks"] as string);
-  const filename = sanitizeFilename(req.headers["x-filename"] as string || "upload");
+app.post(
+  "/api/upload/chunk",
+  express.raw({ type: "*/*", limit: "5mb" }),
+  (req: Request, res: Response) => {
+    const uploadId = req.headers["x-upload-id"] as string;
+    const chunkIndex = parseInt(req.headers["x-chunk-index"] as string);
+    const totalChunks = parseInt(req.headers["x-total-chunks"] as string);
+    const filename = sanitizeFilename(
+      (req.headers["x-filename"] as string) || "upload",
+    );
 
-  if (!uploadId || isNaN(chunkIndex) || isNaN(totalChunks)) {
-    res.status(400).json({ status: "error", error: { message: "Missing chunk headers" } }); return;
-  }
-
-  const chunkPath = path.join(UPLOAD_DIR, `${uploadId}.part${chunkIndex}`);
-  fs.writeFileSync(chunkPath, req.body as Buffer);
-
-  if (!chunks.has(uploadId)) {
-    chunks.set(uploadId, { received: 0, total: totalChunks, path: path.join(UPLOAD_DIR, filename) });
-  }
-  const upload = chunks.get(uploadId)!;
-  upload.received++;
-
-  if (upload.received === totalChunks) {
-    // All chunks received — reassemble the file
-    const writeStream = fs.createWriteStream(upload.path);
-    for (let i = 0; i < totalChunks; i++) {
-      const chunkData = fs.readFileSync(path.join(UPLOAD_DIR, `${uploadId}.part${i}`));
-      writeStream.write(chunkData);
-      fs.unlinkSync(path.join(UPLOAD_DIR, `${uploadId}.part${i}`)); // Clean up chunk
+    if (!uploadId || isNaN(chunkIndex) || isNaN(totalChunks)) {
+      res
+        .status(400)
+        .json({ status: "error", error: { message: "Missing chunk headers" } });
+      return;
     }
-    writeStream.end();
-    chunks.delete(uploadId);
 
-    res.json({
-      status: "success",
-      data: { url: `http://localhost:3001/uploads/${filename}`, complete: true },
-    });
-  } else {
-    res.json({
-      status: "success",
-      data: { received: upload.received, total: totalChunks, complete: false,
-        progress: Math.round((upload.received / totalChunks) * 100) },
-    });
-  }
-});
+    const chunkPath = path.join(UPLOAD_DIR, `${uploadId}.part${chunkIndex}`);
+    fs.writeFileSync(chunkPath, req.body as Buffer);
+
+    if (!chunks.has(uploadId)) {
+      chunks.set(uploadId, {
+        received: 0,
+        total: totalChunks,
+        path: path.join(UPLOAD_DIR, filename),
+      });
+    }
+    const upload = chunks.get(uploadId)!;
+    upload.received++;
+
+    if (upload.received === totalChunks) {
+      // All chunks received — reassemble the file
+      const writeStream = fs.createWriteStream(upload.path);
+      for (let i = 0; i < totalChunks; i++) {
+        const chunkData = fs.readFileSync(
+          path.join(UPLOAD_DIR, `${uploadId}.part${i}`),
+        );
+        writeStream.write(chunkData);
+        fs.unlinkSync(path.join(UPLOAD_DIR, `${uploadId}.part${i}`)); // Clean up chunk
+      }
+      writeStream.end();
+      chunks.delete(uploadId);
+
+      res.json({
+        status: "success",
+        data: {
+          url: `http://localhost:3001/uploads/${filename}`,
+          complete: true,
+        },
+      });
+    } else {
+      res.json({
+        status: "success",
+        data: {
+          received: upload.received,
+          total: totalChunks,
+          complete: false,
+          progress: Math.round((upload.received / totalChunks) * 100),
+        },
+      });
+    }
+  },
+);
 
 // List uploaded files
 app.get("/api/uploads", (_req: Request, res: Response) => {
-  const files = fs.readdirSync(UPLOAD_DIR)
-    .filter(f => !f.endsWith(".part0") && !f.startsWith("."))
-    .map(f => ({
-      name: f, url: `http://localhost:3001/uploads/${f}`,
+  const files = fs
+    .readdirSync(UPLOAD_DIR)
+    .filter((f) => !f.endsWith(".part0") && !f.startsWith("."))
+    .map((f) => ({
+      name: f,
+      url: `http://localhost:3001/uploads/${f}`,
       size: formatFileSize(fs.statSync(path.join(UPLOAD_DIR, f)).size),
     }));
   res.json({ status: "success", data: files });
@@ -222,7 +282,12 @@ app.get("/api/uploads", (_req: Request, res: Response) => {
 app.delete("/api/uploads/:filename", (req: Request, res: Response) => {
   const safeName = path.basename(req.params["filename"]!); // Prevent path traversal!
   const filePath = path.join(UPLOAD_DIR, safeName);
-  if (!fs.existsSync(filePath)) { res.status(404).json({ status: "error", error: { message: "File not found" } }); return; }
+  if (!fs.existsSync(filePath)) {
+    res
+      .status(404)
+      .json({ status: "error", error: { message: "File not found" } });
+    return;
+  }
   fs.unlinkSync(filePath);
   res.json({ status: "success", message: "File deleted" });
 });
@@ -235,7 +300,9 @@ function formatFileSize(bytes: number): string {
 
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);
-  res.status(500).json({ status: "error", error: { message: "Internal server error" } });
+  res
+    .status(500)
+    .json({ status: "error", error: { message: "Internal server error" } });
 });
 
 app.listen(3001, () => {

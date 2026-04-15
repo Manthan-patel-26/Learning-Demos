@@ -8,7 +8,7 @@
  *
  * Solution: Validate ALL env vars at startup using Zod.
  * If validation fails, crash EARLY with a clear error message.
- * 
+ *
  * This file is your "env contract" — it documents exactly what
  * environment variables your app needs.
  */
@@ -39,9 +39,7 @@ const envSchema = z.object({
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(15 * 60 * 1000), // 15 min
   RATE_LIMIT_MAX_REQUESTS: z.coerce.number().default(100),
 
-  LOG_LEVEL: z
-    .enum(["debug", "info", "warn", "error"])
-    .default("debug"),
+  LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("debug"),
 });
 
 // ─── VALIDATE ON STARTUP ──────────────────────────────────

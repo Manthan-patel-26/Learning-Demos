@@ -18,14 +18,17 @@ dotenv.config();
 
 // ─── REDIS CONNECTION ─────────────────────────────────────
 // ioredis: production-grade Redis client with auto-reconnect, pipelining
-export const redis = new Redis(process.env["REDIS_URL"] ?? "redis://localhost:6379", {
-  maxRetriesPerRequest: 3,
-  lazyConnect: true,  // Don't connect until first command
-  retryStrategy: (times) => {
-    // Exponential backoff: 50ms, 100ms, 200ms, ... max 2s
-    return Math.min(times * 50, 2000);
+export const redis = new Redis(
+  process.env["REDIS_URL"] ?? "redis://localhost:6379",
+  {
+    maxRetriesPerRequest: 3,
+    lazyConnect: true, // Don't connect until first command
+    retryStrategy: (times) => {
+      // Exponential backoff: 50ms, 100ms, 200ms, ... max 2s
+      return Math.min(times * 50, 2000);
+    },
   },
-});
+);
 
 redis.on("error", (err) => console.error("[Redis] Error:", err.message));
 redis.on("connect", () => console.log("[Redis] Connected"));
@@ -50,7 +53,7 @@ type CacheKey = string;
 export async function cacheAside<T>(
   key: CacheKey,
   fetch: () => Promise<T>,
-  ttl = 300 // 5 minutes
+  ttl = 300, // 5 minutes
 ): Promise<{ data: T; fromCache: boolean }> {
   // Try cache first
   const cached = await redis.get(key);
@@ -78,7 +81,7 @@ export async function cacheWithLock<T>(
   key: CacheKey,
   fetch: () => Promise<T>,
   ttl = 300,
-  lockTtl = 10 // Lock expires after 10s (prevents deadlock)
+  lockTtl = 10, // Lock expires after 10s (prevents deadlock)
 ): Promise<T> {
   // Check cache first (no lock needed for reads)
   const cached = await redis.get(key);
@@ -102,7 +105,7 @@ export async function cacheWithLock<T>(
     }
   } else {
     // Another request holds the lock — wait and retry from cache
-    await new Promise(r => setTimeout(r, 100)); // Wait 100ms
+    await new Promise((r) => setTimeout(r, 100)); // Wait 100ms
     const retried = await redis.get(key);
     if (retried) return JSON.parse(retried) as T;
     // If still not cached, just fetch directly (fallback)
@@ -130,7 +133,7 @@ export async function cacheWithTag<T>(
   key: CacheKey,
   tags: string[],
   fetch: () => Promise<T>,
-  ttl = 300
+  ttl = 300,
 ): Promise<T> {
   const { data } = await cacheAside(key, fetch, ttl);
   // Register this key under each tag
@@ -152,9 +155,9 @@ export async function invalidateTag(tag: string): Promise<void> {
 // More accurate than fixed window (no burst at window boundary).
 
 export async function checkRateLimit(
-  identifier: string,  // e.g., IP address or user ID
-  limit: number,       // Max requests
-  windowSec: number    // Time window in seconds
+  identifier: string, // e.g., IP address or user ID
+  limit: number, // Max requests
+  windowSec: number, // Time window in seconds
 ): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
   const key = `rate:${identifier}`;
   const now = Date.now();
@@ -186,11 +189,18 @@ export async function checkRateLimit(
 // Benefits: sessions survive server restarts, share across multiple servers.
 
 export interface Session {
-  userId: string; role: string; email: string;
-  createdAt: number; lastActivity: number;
+  userId: string;
+  role: string;
+  email: string;
+  createdAt: number;
+  lastActivity: number;
 }
 
-export async function createSession(sessionId: string, data: Session, ttl = 3600): Promise<void> {
+export async function createSession(
+  sessionId: string,
+  data: Session,
+  ttl = 3600,
+): Promise<void> {
   // HSET: store as hash (more efficient than JSON string for frequent field access)
   await redis.hset(`session:${sessionId}`, {
     ...data,

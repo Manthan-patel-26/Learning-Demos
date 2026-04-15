@@ -14,10 +14,13 @@ import React from "react";
 // ReactElement: specifically a JSX element (<div>, <Component />)
 // Use ReactNode for `children` - it's the most permissive and correct type
 
-interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "children"> {
-  label: React.ReactNode;   // ReactNode: can be string, JSX, or anything renderable
+interface CheckboxProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "type" | "children"
+> {
+  label: React.ReactNode; // ReactNode: can be string, JSX, or anything renderable
   error?: string;
-  description?: string;     // Optional secondary text
+  description?: string; // Optional secondary text
 }
 
 const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
@@ -30,19 +33,26 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
           <input
             ref={ref}
             id={checkboxId}
-            type="checkbox"  // Always "checkbox" - hardcoded!
+            type="checkbox" // Always "checkbox" - hardcoded!
             aria-invalid={!!error}
             style={{
-              width: 16, height: 16, marginTop: 2,
+              width: 16,
+              height: 16,
+              marginTop: 2,
               cursor: rest.disabled ? "not-allowed" : "pointer",
               accentColor: "#4299e1", // Modern CSS - colors the checkbox
             }}
             {...rest}
           />
           <div>
-            <label htmlFor={checkboxId} style={{ fontSize: 15, color: "#2d3748", cursor: "pointer" }}>
+            <label
+              htmlFor={checkboxId}
+              style={{ fontSize: 15, color: "#2d3748", cursor: "pointer" }}
+            >
               {label}
-              {required && <span style={{ color: "#e53e3e", marginLeft: 2 }}>*</span>}
+              {required && (
+                <span style={{ color: "#e53e3e", marginLeft: 2 }}>*</span>
+              )}
             </label>
             {description && (
               <p style={{ margin: "2px 0 0", fontSize: 12, color: "#718096" }}>
@@ -53,13 +63,16 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         </div>
 
         {error && (
-          <span role="alert" style={{ fontSize: 12, color: "#e53e3e", marginLeft: 24 }}>
+          <span
+            role="alert"
+            style={{ fontSize: 12, color: "#e53e3e", marginLeft: 24 }}
+          >
             ⚠ {error}
           </span>
         )}
       </div>
     );
-  }
+  },
 );
 
 Checkbox.displayName = "Checkbox";

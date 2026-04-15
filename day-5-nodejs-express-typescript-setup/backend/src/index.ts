@@ -17,7 +17,10 @@ import express from "express";
 import cors from "cors";
 import { config, isDev } from "./config/env";
 import {
-  requestLogger, errorHandler, notFound, rateLimiter
+  requestLogger,
+  errorHandler,
+  notFound,
+  rateLimiter,
 } from "./middleware";
 import { usersRouter } from "./routes/users";
 
@@ -28,23 +31,25 @@ const app = express();
 // Wrong order = security holes or broken functionality.
 
 // 1. CORS — must be FIRST to handle preflight OPTIONS requests
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (curl, Postman, server-to-server)
-    if (!origin) return callback(null, true);
-    if (config.ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
-    callback(new Error(`CORS: Origin ${origin} not allowed`));
-  },
-  credentials: true, // Allow cookies to be sent cross-origin
-  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (curl, Postman, server-to-server)
+      if (!origin) return callback(null, true);
+      if (config.ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+      callback(new Error(`CORS: Origin ${origin} not allowed`));
+    },
+    credentials: true, // Allow cookies to be sent cross-origin
+    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 // 2. Rate limiter — early in chain, before parsing body (saves CPU)
 app.use(rateLimiter);
 
 // 3. Body parsers — before any route handler that needs req.body
-app.use(express.json({ limit: "10kb" }));   // Reject huge payloads (DoS protection)
+app.use(express.json({ limit: "10kb" })); // Reject huge payloads (DoS protection)
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
 // 4. Request logger — after body parsing, before routes
@@ -103,7 +108,7 @@ function gracefulShutdown(signal: string) {
 }
 
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
-process.on("SIGINT",  () => gracefulShutdown("SIGINT"));  // Ctrl+C
+process.on("SIGINT", () => gracefulShutdown("SIGINT")); // Ctrl+C
 
 // Handle unhandled promise rejections — don't let them silently fail
 process.on("unhandledRejection", (reason) => {

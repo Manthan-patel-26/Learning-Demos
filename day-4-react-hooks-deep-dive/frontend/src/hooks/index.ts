@@ -95,7 +95,7 @@ export function useThrottle<T>(value: T, interval = 200): T {
   }, [value, interval]);
 
   return throttledValue;
-} 
+}
 
 // ─────────────────────────────────────────────
 // 3. usePrevious
@@ -138,10 +138,10 @@ export function usePrevious<T>(value: T): T | undefined {
 // ─────────────────────────────────────────────
 
 export interface PerformanceMetrics {
-  renderCount: number;         // How many times the component re-rendered
-  lastRenderTime: number;      // Duration of the most recent render (ms)
-  averageRenderTime: number;   // Average render duration across all renders
-  isSlow: boolean;             // true if lastRenderTime > threshold
+  renderCount: number; // How many times the component re-rendered
+  lastRenderTime: number; // Duration of the most recent render (ms)
+  averageRenderTime: number; // Average render duration across all renders
+  isSlow: boolean; // true if lastRenderTime > threshold
 }
 
 /**
@@ -151,7 +151,7 @@ export interface PerformanceMetrics {
  */
 export function usePerformanceMonitor(
   componentName: string,
-  slowThreshold = 16
+  slowThreshold = 16,
 ): PerformanceMetrics {
   // useRef for render count — doesn't trigger re-render when incremented
   const renderCount = useRef(0);
@@ -179,7 +179,7 @@ export function usePerformanceMonitor(
     // Warn about slow renders
     if (duration > slowThreshold) {
       console.warn(
-        `[Performance] ${componentName} render #${renderCount.current} took ${duration.toFixed(2)}ms (threshold: ${slowThreshold}ms)`
+        `[Performance] ${componentName} render #${renderCount.current} took ${duration.toFixed(2)}ms (threshold: ${slowThreshold}ms)`,
       );
     }
 
@@ -208,14 +208,14 @@ export function usePerformanceMonitor(
 //    Use case: user preferences, theme, last search
 // ─────────────────────────────────────────────
 
-/** 
+/**
  * @param key           localStorage key
  * @param initialValue  Default value if nothing stored yet
  * @returns             [value, setValue] — same API as useState!
  */
 export function useLocalStorage<T>(
   key: string,
-  initialValue: T
+  initialValue: T,
 ): [T, (value: T | ((prev: T) => T)) => void] {
   // Initialize from localStorage (or use initialValue if not found/parse error)
   const [storedValue, setStoredValue] = useState<T>(() => {
@@ -227,7 +227,7 @@ export function useLocalStorage<T>(
       // If localStorage is unavailable or JSON is corrupt, use initial value
       console.warn(`useLocalStorage: Could not read key "${key}"`);
       return initialValue;
-    } 
+    }
   });
 
   // Wrap setValue to also persist to localStorage
@@ -243,7 +243,7 @@ export function useLocalStorage<T>(
         console.warn(`useLocalStorage: Could not write key "${key}"`);
       }
     },
-    [key, storedValue]
+    [key, storedValue],
   );
 
   return [storedValue, setValue];
@@ -270,7 +270,7 @@ interface AsyncState<T> {
 
 export function useAsync<T>(
   asyncFunction: () => Promise<T>,
-  immediate = false  // Run on mount if true
+  immediate = false, // Run on mount if true
 ): AsyncState<T> & { execute: () => Promise<void> } {
   const [state, setState] = useState<AsyncState<T>>({
     status: "idle",
@@ -292,7 +292,8 @@ export function useAsync<T>(
       }
     } catch (error) {
       if (isMounted.current) {
-        const message = error instanceof Error ? error.message : "Unknown error";
+        const message =
+          error instanceof Error ? error.message : "Unknown error";
         setState({ status: "error", data: null, error: message });
       }
     }
