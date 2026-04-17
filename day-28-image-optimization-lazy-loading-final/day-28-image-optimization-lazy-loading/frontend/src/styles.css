@@ -1,0 +1,272 @@
+/* src/styles.css — Day 28: Image Optimization & Lazy Loading */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0a0a0a;
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* ── Page Header ────────────────────────────────────────────────────────── */
+.page-header {
+  text-align: center;
+  padding: 48px 16px 32px;
+  background: linear-gradient(180deg, #111827 0%, #0a0a0a 100%);
+  border-bottom: 1px solid #1f2937;
+}
+.page-header h1 { font-size: 2.25rem; font-weight: 800; color: #f9fafb; }
+.page-subtitle { color: #6b7280; margin-top: 8px; font-size: 0.85rem; letter-spacing: 0.04em; }
+
+/* ── Main Content ───────────────────────────────────────────────────────── */
+.main-content { max-width: 1400px; margin: 0 auto; padding: 32px 16px 64px; }
+
+/* ── Gallery Grid ───────────────────────────────────────────────────────── */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+/* ── Gallery Item ───────────────────────────────────────────────────────── */
+.gallery-item {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #111827;
+}
+
+.gallery-item:hover .gallery-caption { opacity: 1; }
+.gallery-item:hover .real-image { transform: scale(1.03); }
+
+/* Invisible full-size button overlay for accessibility */
+.gallery-item-btn {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 12px;
+}
+.gallery-item-btn:focus-visible {
+  outline: 3px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* ── Caption Overlay ────────────────────────────────────────────────────── */
+.gallery-caption {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 24px 16px 16px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.75));
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.caption-title { font-size: 0.95rem; font-weight: 600; color: #fff; }
+.caption-location { font-size: 0.78rem; color: #d1d5db; margin-top: 3px; }
+
+/* ── Optimized Image Component ──────────────────────────────────────────── */
+.optimized-image-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #1f2937; /* Shown while blur placeholder fades in */
+  display: block;
+}
+
+/* Blur placeholder — covers the full container */
+.image-placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Transition out when real image loads */
+  transition: opacity 0.4s ease;
+  opacity: 1;
+  /* Scale slightly to hide blurred edges */
+  transform: scale(1.08);
+}
+.image-placeholder-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Real image — fades in over the blur placeholder */
+.real-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Start invisible, transition to full opacity when loaded */
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.35s ease;
+  /* Ensure it layers above the blur placeholder */
+  position: relative;
+  z-index: 1;
+}
+.real-image-loaded {
+  opacity: 1;
+}
+
+/* Gallery image sizing */
+.gallery-image {
+  width: 100%;
+}
+
+/* Error state */
+.image-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #6b7280;
+  font-size: 0.82rem;
+  background: #111827;
+}
+.image-error span:first-child { font-size: 2rem; }
+
+/* ── Skeleton Loading ───────────────────────────────────────────────────── */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+.skeleton-card {
+  border-radius: 12px;
+  background: #1f2937;
+  min-height: 200px;
+}
+.skeleton-pulse { animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Gallery Loading/Error States ──────────────────────────────────────── */
+.gallery-loading { padding: 0; }
+.gallery-error {
+  text-align: center; padding: 60px;
+  color: #ef4444;
+}
+.gallery-error button {
+  margin-top: 16px; padding: 10px 24px;
+  background: #1f2937; color: #e2e8f0;
+  border: 1px solid #374151; border-radius: 8px;
+  cursor: pointer; font-size: 0.9rem;
+}
+.gallery-error button:hover { background: #374151; }
+
+/* ── Lightbox ───────────────────────────────────────────────────────────── */
+.lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  /* Backdrop fade-in */
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.lightbox-dialog {
+  background: #111827;
+  border-radius: 16px;
+  border: 1px solid #1f2937;
+  width: 100%;
+  max-width: 1100px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Dialog pop-in animation */
+  animation: scaleIn 0.2s ease;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.lightbox-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #1f2937;
+  flex-shrink: 0;
+}
+.lightbox-title { font-size: 1.1rem; font-weight: 700; color: #f9fafb; }
+.lightbox-sub { font-size: 0.8rem; color: #6b7280; margin-top: 3px; }
+.lightbox-close {
+  background: #1f2937; border: none; color: #9ca3af;
+  width: 36px; height: 36px; border-radius: 50%;
+  font-size: 1rem; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.lightbox-close:hover { background: #374151; color: #f9fafb; }
+.lightbox-close:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }
+
+.lightbox-image-container {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 16px 24px;
+}
+.lightbox-image {
+  max-height: 65vh;
+  width: auto;
+}
+.lightbox-image .real-image {
+  object-fit: contain;
+  max-height: 65vh;
+}
+
+.lightbox-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px 20px;
+  border-top: 1px solid #1f2937;
+  flex-shrink: 0;
+}
+.lightbox-btn {
+  padding: 8px 20px;
+  background: #1f2937; color: #e2e8f0;
+  border: 1px solid #374151; border-radius: 8px;
+  cursor: pointer; font-size: 0.88rem;
+  transition: background 0.15s;
+}
+.lightbox-btn:hover:not(:disabled) { background: #374151; }
+.lightbox-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.lightbox-btn:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }
+.lightbox-counter { font-size: 0.82rem; color: #6b7280; }
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .gallery-grid { grid-template-columns: 1fr; gap: 8px; }
+  .lightbox-dialog { max-height: 98vh; border-radius: 12px; }
+  .lightbox-header { padding: 14px 16px 12px; }
+  .lightbox-nav { padding: 12px 16px 16px; }
+  .lightbox-btn { padding: 7px 14px; font-size: 0.82rem; }
+}
